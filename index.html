@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CuriosityWeekends Inventory</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+
+/* ================= THEME ================= */
+
+:root{
+  --bg:#020617;
+  --card:#020617;
+  --border:#1e293b;
+
+  --text:#f8fafc;
+  --muted:#94a3b8;
+
+  --primary:#2563eb;
+  --primary-soft:#1e40af;
+}
+
+
+/* ================= RESET ================= */
+
+*{
+  box-sizing:border-box;
+  font-family:Inter,sans-serif;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+}
+
+
+/* ================= LAYOUT ================= */
+
+.app{
+  max-width:820px;
+  margin:auto;
+  padding:28px;
+  min-height:100vh;
+}
+
+
+/* ================= HEADER ================= */
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  padding:22px 28px;
+
+  border-radius:14px;
+
+  background:#020617;
+  border:1px solid var(--border);
+}
+
+.header h2{
+  margin:0;
+  font-size:20px;
+  font-weight:600;
+}
+
+.header span{
+  color:var(--primary);
+}
+
+
+/* ================= PROGRESS ================= */
+
+.steps{
+  display:flex;
+  justify-content:space-between;
+  margin:30px 0;
+}
+
+.step{
+  width:36px;
+  height:36px;
+
+  border-radius:50%;
+
+  border:2px solid var(--border);
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-weight:600;
+  font-size:14px;
+
+  color:var(--muted);
+
+  transition:.3s;
+}
+
+.step.active{
+  border-color:var(--primary);
+  color:var(--primary);
+}
+
+.step.done{
+  background:var(--primary);
+  color:white;
+  border:none;
+}
+
+
+/* ================= CARD ================= */
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+
+  padding:28px;
+
+  display:none;
+
+  animation:fade .3s ease;
+}
+
+.card.active{
+  display:block;
+}
+
+@keyframes fade{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1}
+}
+
+
+/* ================= FORM ================= */
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+
+@media(max-width:650px){
+  .grid{grid-template-columns:1fr}
+}
+
+label{
+  font-size:13px;
+  color:var(--muted);
+  font-weight:500;
+}
+
+input{
+  width:100%;
+
+  padding:12px 14px;
+
+  border-radius:10px;
+
+  background:#020617;
+
+  border:1px solid var(--border);
+
+  color:var(--text);
+
+  margin-top:6px;
+
+  font-size:14px;
+}
+
+input:focus{
+  outline:none;
+  border-color:var(--primary);
+}
+
+
+/* ================= PRODUCTS ================= */
+
+.product{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  padding:14px 16px;
+
+  border-radius:12px;
+
+  border:1px solid var(--border);
+
+  margin-bottom:12px;
+}
+
+.product b{
+  font-size:15px;
+}
+
+
+/* ================= CART ================= */
+
+.cart{
+  margin-top:15px;
+
+  padding:14px;
+
+  border-radius:12px;
+
+  background:#020617;
+
+  border:1px solid var(--border);
+
+  font-size:14px;
+}
+
+
+/* ================= BUTTONS ================= */
+
+.actions{
+  display:flex;
+  gap:12px;
+  margin-top:25px;
+}
+
+.btn{
+  flex:1;
+
+  padding:12px;
+
+  border-radius:10px;
+
+  border:none;
+
+  font-size:15px;
+  font-weight:500;
+
+  cursor:pointer;
+
+  transition:.2s;
+}
+
+.btn.primary{
+  background:var(--primary);
+  color:white;
+}
+
+.btn.primary:hover{
+  background:var(--primary-soft);
+}
+
+.btn.secondary{
+  background:transparent;
+  color:var(--muted);
+  border:1px solid var(--border);
+}
+
+.btn.secondary:hover{
+  border-color:var(--primary);
+  color:var(--primary);
+}
+
+
+/* ================= PREVIEW ================= */
+
+.preview{
+  font-size:14px;
+  line-height:1.7;
+}
+
+.preview hr{
+  border:none;
+  border-top:1px solid var(--border);
+  margin:14px 0;
+}
+
+
+/* ================= STATUS ================= */
+
+.status{
+  text-align:center;
+  padding:50px 20px;
+  font-size:18px;
+}
+
+.success{
+  color:#22c55e;
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div class="app">
+
+
+<!-- HEADER -->
+<div class="header">
+
+<h2>CuriosityWeekends <span>Inventory</span></h2>
+
+<div style="color:var(--muted);font-size:13px">
+Internal System
+</div>
+
+</div>
+
+
+<!-- STEPS -->
+<div class="steps">
+
+<div class="step active" id="p1">1</div>
+<div class="step" id="p2">2</div>
+<div class="step" id="p3">3</div>
+<div class="step" id="p4">4</div>
+<div class="step" id="p5">✓</div>
+
+</div>
+
+
+<!-- STEP 1 -->
+<div class="card active" id="s1">
+
+<h3>Basic Information</h3>
+
+<div class="grid">
+
+<div>
+<label>Name</label>
+<input id="name">
+</div>
+
+<div>
+<label>Class</label>
+<input id="cls">
+</div>
+
+<div>
+<label>Phone</label>
+<input id="phone">
+</div>
+
+<div>
+<label>Email</label>
+<input id="email">
+</div>
+
+<div>
+<label>Return Date</label>
+<input id="ret">
+</div>
+
+</div>
+
+<div class="actions">
+<button class="btn primary" onclick="next()">Continue</button>
+</div>
+
+</div>
+
+
+<!-- STEP 2 -->
+<div class="card" id="s2">
+
+<h3>Select Items</h3>
+
+<div id="products"></div>
+
+<div class="cart" id="cart">No items selected</div>
+
+<div class="actions">
+<button class="btn secondary" onclick="back()">Back</button>
+<button class="btn primary" onclick="next()">Continue</button>
+</div>
+
+</div>
+
+
+<!-- STEP 3 -->
+<div class="card" id="s3">
+
+<h3>Project Details</h3>
+
+<div class="grid">
+
+<div>
+<label>Purpose</label>
+<input id="purpose">
+</div>
+
+<div>
+<label>Members</label>
+<input id="members">
+</div>
+
+<div>
+<label>GitHub</label>
+<input id="git">
+</div>
+
+</div>
+
+<div class="actions">
+<button class="btn secondary" onclick="back()">Back</button>
+<button class="btn primary" onclick="next()">Continue</button>
+</div>
+
+</div>
+
+
+<!-- STEP 4 -->
+<div class="card" id="s4">
+
+<h3>Review Submission</h3>
+
+<div class="preview" id="preview"></div>
+
+<div class="actions">
+<button class="btn secondary" onclick="back()">Back</button>
+<button class="btn primary" onclick="submitData()">Submit</button>
+</div>
+
+</div>
+
+
+<!-- STEP 5 -->
+<div class="card" id="s5">
+
+<div class="status" id="status">
+Submitting...
+</div>
+
+</div>
+
+
+</div>
+
+
+<script>
+
+/* ================= API ================= */
+
+const API =
+"https://script.google.com/macros/s/AKfycbwd_xE9NtNjLAjfYWZLjygRijPxFm090e2zYNNlkvJk8X-m-NbKu5AbREWR-sdJr0YQTw/exec";
+
+
+/* ================= STATE ================= */
+
+let step=1;
+let cart=[];
+
+
+/* ================= NAV ================= */
+
+function show(){
+
+  document.querySelectorAll(".card")
+  .forEach(c=>c.classList.remove("active"));
+
+  document.getElementById("s"+step)
+  .classList.add("active");
+
+  for(let i=1;i<=5;i++){
+
+    let d=document.getElementById("p"+i);
+
+    d.classList.remove("active","done");
+
+    if(i<step) d.classList.add("done");
+    if(i==step) d.classList.add("active");
+  }
+}
+
+function next(){
+
+  if(step==3) makePreview();
+
+  if(step<5){
+    step++;
+    show();
+  }
+}
+
+function back(){
+
+  if(step>1){
+    step--;
+    show();
+  }
+}
+
+
+/* ================= LOAD PRODUCTS ================= */
+
+fetch(API+"?action=getProducts")
+.then(r=>r.json())
+.then(data=>{
+
+  let box=document.getElementById("products");
+
+  data.forEach(p=>{
+
+    let d=document.createElement("div");
+
+    d.className="product";
+
+    d.innerHTML=`
+
+      <div>
+        <b>${p[1]}</b><br>
+        <small style="color:var(--muted)">
+          Stock: ${p[3]}
+        </small>
+      </div>
+
+      <button class="btn primary"
+        style="max-width:90px"
+        onclick="add('${p[1]}')">
+        Add
+      </button>
+
+    `;
+
+    box.appendChild(d);
+
+  });
+
+});
+
+
+/* ================= CART ================= */
+
+function add(name){
+
+  let q=prompt("Enter quantity");
+
+  if(!q||q<=0) return;
+
+  cart.push({name,qty:+q});
+
+  renderCart();
+}
+
+function renderCart(){
+
+  let c=document.getElementById("cart");
+
+  if(!cart.length){
+    c.innerHTML="No items selected";
+    return;
+  }
+
+  let h="<b>Selected Items</b><br>";
+
+  cart.forEach(i=>{
+    h+=`• ${i.name} × ${i.qty}<br>`;
+  });
+
+  c.innerHTML=h;
+}
+
+
+/* ================= PREVIEW ================= */
+
+function makePreview(){
+
+  let p=document.getElementById("preview");
+
+  let items="";
+
+  cart.forEach(i=>{
+    items+=`• ${i.name} × ${i.qty}<br>`;
+  });
+
+  const nameVal   = document.getElementById("name").value;
+  const classVal  = document.getElementById("cls").value;
+  const phoneVal  = document.getElementById("phone").value;
+  const emailVal  = document.getElementById("email").value;
+  const retVal    = document.getElementById("ret").value;
+
+  const purposeVal = document.getElementById("purpose").value;
+  const membersVal = document.getElementById("members").value;
+  const gitVal     = document.getElementById("git").value;
+
+
+  p.innerHTML=`
+
+  <b>Name:</b> ${nameVal}<br>
+  <b>Class:</b> ${classVal}<br>
+  <b>Phone:</b> ${phoneVal}<br>
+  <b>Email:</b> ${emailVal}<br>
+
+  <hr>
+
+  <b>Items:</b><br>${items}
+
+  <hr>
+
+  <b>Purpose:</b> ${purposeVal}<br>
+  <b>Members:</b> ${membersVal}<br>
+  <b>GitHub:</b> ${gitVal}<br>
+
+  <b>Return:</b> ${retVal}
+
+  `;
+}
+
+
+/* ================= SUBMIT ================= */
+
+function submitData(){
+
+  if(!cart.length){
+    alert("Add items first");
+    return;
+  }
+
+  step=5;
+  show();
+
+  status.innerHTML="⏳ Submitting...";
+
+
+  let data={
+
+    name: document.getElementById("name").value,
+    class: document.getElementById("cls").value,
+    phone: document.getElementById("phone").value,
+    email: document.getElementById("email").value,
+
+    items: formatItems(),
+
+    purpose: document.getElementById("purpose").value,
+    members: document.getElementById("members").value,
+    github: document.getElementById("git").value,
+
+    returnDate: document.getElementById("ret").value,
+
+    cart:cart
+  };
+
+
+  fetch(API,{
+    method:"POST",
+    mode:"no-cors",
+    body:JSON.stringify(data)
+  })
+
+
+  // simulate success (no-cors has no response)
+  setTimeout(()=>{
+
+    status.innerHTML=
+      "<span class='success'>✔ Submitted Successfully</span><br><br>"+
+      "Download PDF and submit to manager.";
+
+    makePDF(data);
+
+  },1500);
+
+}
+
+
+/* ================= FORMAT ITEMS ================= */
+
+function formatItems(){
+
+  let txt="";
+
+  cart.forEach(i=>{
+    txt+=`${i.name} x${i.qty}, `;
+  });
+
+  return txt.slice(0,-2);
+}
+
+
+/* ================= PDF ================= */
+
+function makePDF(d){
+
+  const { jsPDF } = window.jspdf;
+
+  let pdf = new jsPDF();
+
+
+  /* HEADER */
+
+  pdf.setFillColor(37,99,235);
+  pdf.rect(0,0,210,22,"F");
+
+  pdf.setTextColor(255,255,255);
+  pdf.setFontSize(15);
+
+  pdf.text(
+    "CuriosityWeekends Inventory Receipt",
+    105,
+    15,
+    {align:"center"}
+  );
+
+
+  pdf.setTextColor(0,0,0);
+  pdf.setFontSize(11);
+
+  let y = 30;
+
+
+  /* STUDENT BOX */
+
+  pdf.roundedRect(15,y,180,32,3,3);
+
+  pdf.text("Student Details",18,y+7);
+
+  y+=12;
+
+  pdf.text("Name: "+d.name,20,y);
+  pdf.text("Class: "+d.class,120,y);
+
+  y+=7;
+
+  pdf.text("Phone: "+d.phone,20,y);
+  pdf.text("Email: "+d.email,120,y);
+
+  y+=18;
+
+
+  /* ITEMS */
+
+  pdf.text("Issued Items",18,y);
+  y+=5;
+
+  pdf.line(15,y,195,y);
+  y+=6;
+
+  pdf.text("Item",25,y);
+  pdf.text("Qty",170,y);
+
+  y+=4;
+
+  pdf.line(15,y,195,y);
+  y+=6;
+
+
+  d.cart.forEach(i=>{
+
+    pdf.text(i.name,25,y);
+    pdf.text(String(i.qty),172,y);
+
+    y+=6;
+  });
+
+
+  y+=6;
+
+
+  /* PROJECT */
+
+  pdf.text("Project Details",18,y);
+  y+=5;
+
+  pdf.line(15,y,195,y);
+  y+=7;
+
+  pdf.text("Purpose: "+d.purpose,20,y);
+  y+=6;
+
+  pdf.text("Members: "+d.members,20,y);
+  y+=6;
+
+  pdf.text("GitHub: "+d.github,20,y);
+  y+=10;
+
+
+  /* RETURN */
+
+  pdf.text("Return Date: "+d.returnDate,20,y);
+  y+=14;
+
+  pdf.text("Lab Seal & Signature:",20,y);
+
+  pdf.roundedRect(20,y+4,60,22,2,2);
+
+
+  /* FOOTER */
+
+  pdf.setFontSize(9);
+
+  pdf.text(
+    "Generated by CuriosityWeekends System",
+    105,
+    290,
+    {align:"center"}
+  );
+
+
+  pdf.save("CW_Inventory_Receipt.pdf");
+}
+
+</script>
+
+</body>
+</html>
