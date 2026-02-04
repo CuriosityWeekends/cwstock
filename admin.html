@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CW Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+/* ================= THEME ================= */
+
+:root{
+  --bg:#020617;
+  --card:#020617;
+  --border:#1e293b;
+
+  --text:#f8fafc;
+  --muted:#94a3b8;
+
+  --primary:#2563eb;
+  --danger:#ef4444;
+}
+
+
+/* ================= RESET ================= */
+
+*{
+  box-sizing:border-box;
+  font-family:Inter,sans-serif;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+}
+
+
+/* ================= LOGIN ================= */
+
+.login{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.login-box{
+  width:340px;
+  padding:30px;
+
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+}
+
+.login-box h2{
+  margin-bottom:20px;
+  text-align:center;
+}
+
+.login-box input{
+  width:100%;
+  padding:12px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:#020617;
+  color:var(--text);
+}
+
+.login-box button{
+  width:100%;
+  margin-top:15px;
+  padding:12px;
+  border:none;
+  border-radius:8px;
+  background:var(--primary);
+  color:white;
+  cursor:pointer;
+}
+
+#error{
+  color:#ef4444;
+  text-align:center;
+  margin-top:10px;
+}
+
+
+/* ================= DASHBOARD ================= */
+
+.app{
+  display:none;
+  max-width:1200px;
+  margin:auto;
+  padding:25px;
+}
+
+
+/* ================= HEADER ================= */
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  padding:20px;
+
+  border:1px solid var(--border);
+  border-radius:14px;
+}
+
+.header h2{
+  margin:0;
+}
+
+.header button{
+  background:var(--danger);
+  border:none;
+  padding:8px 14px;
+  border-radius:8px;
+  color:white;
+  cursor:pointer;
+}
+
+
+/* ================= TABS ================= */
+
+.tabs{
+  display:flex;
+  gap:10px;
+  margin:25px 0;
+}
+
+.tab{
+  padding:10px 18px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  cursor:pointer;
+  color:var(--muted);
+}
+
+.tab.active{
+  background:var(--primary);
+  color:white;
+  border:none;
+}
+
+
+/* ================= CARD ================= */
+
+.card{
+  display:none;
+
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:20px;
+}
+
+.card.active{
+  display:block;
+}
+
+
+/* ================= PRODUCT FORM ================= */
+
+.add-box{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:15px;
+}
+
+.add-box input{
+  padding:8px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:#020617;
+  color:var(--text);
+}
+
+
+/* ================= TABLE ================= */
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+
+th,td{
+  border:1px solid var(--border);
+  padding:10px;
+  text-align:left;
+}
+
+th{
+  background:#020617;
+}
+
+
+/* ================= BUTTON ================= */
+
+.btn{
+  padding:6px 10px;
+  border:none;
+  border-radius:6px;
+  background:var(--primary);
+  color:white;
+  cursor:pointer;
+}
+
+.btn.danger{
+  background:var(--danger);
+}
+
+.refresh{
+  float:right;
+  margin-bottom:10px;
+}
+
+</style>
+</head>
+
+
+<body>
+
+
+<!-- ================= LOGIN ================= -->
+
+<div class="login" id="loginBox">
+
+  <div class="login-box">
+
+    <h2>Admin Login</h2>
+
+    <input
+      type="password"
+      id="pass"
+      placeholder="Password"
+    >
+
+    <button onclick="login()">
+      Login
+    </button>
+
+    <div id="error"></div>
+
+  </div>
+
+</div>
+
+
+<!-- ================= DASHBOARD ================= -->
+
+<div class="app" id="appBox">
+
+
+<!-- HEADER -->
+<div class="header">
+
+<h2>⚡ CW Admin Panel</h2>
+
+<button onclick="logout()">
+  Logout
+</button>
+
+</div>
+
+
+<!-- TABS -->
+<div class="tabs">
+
+<div class="tab active" onclick="openTab(1)">
+  📦 Products
+</div>
+
+<div class="tab" onclick="openTab(2)">
+  👤 Submissions
+</div>
+
+</div>
+
+
+<!-- ================= PRODUCTS ================= -->
+
+<div class="card active" id="tab1">
+
+
+<h3>Products</h3>
+
+
+<!-- ADD PRODUCT -->
+
+<div class="add-box">
+
+<input id="pName" placeholder="Product Name">
+
+<input id="pCat" placeholder="Category">
+
+<input id="pStock" placeholder="Stock">
+
+<button class="btn" onclick="addProduct()">
+➕ Add
+</button>
+
+<button class="btn refresh" onclick="loadProducts()">
+🔄 Refresh
+</button>
+
+</div>
+
+
+<table id="prodTable">
+
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Category</th>
+<th>Stock</th>
+<th>Save</th>
+<th>Delete</th>
+</tr>
+
+</table>
+
+</div>
+
+
+<!-- ================= SUBMISSIONS ================= -->
+
+<div class="card" id="tab2">
+
+
+<h3>Submissions</h3>
+
+<button class="btn refresh" onclick="loadSubs()">
+🔄 Refresh
+</button>
+
+
+<table id="subTable">
+
+<tr>
+<th>Time</th>
+<th>Name</th>
+<th>Class</th>
+<th>Phone</th>
+<th>Email</th>
+<th>Items</th>
+<th>Purpose</th>
+<th>Members</th>
+<th>GitHub</th>
+<th>Return</th>
+</tr>
+
+</table>
+
+</div>
+
+
+</div>
+
+
+<script>
+
+/* ================= CONFIG ================= */
+
+const API =
+"https://script.google.com/macros/s/AKfycbwd_xE9NtNjLAjfYWZLjygRijPxFm090e2zYNNlkvJk8X-m-NbKu5AbREWR-sdJr0YQTw/exec";
+
+const PASSWORD = "cwstock";
+
+
+/* ================= LOGIN ================= */
+
+function login(){
+
+  const loginBox =
+    document.getElementById("loginBox");
+
+  const appBox =
+    document.getElementById("appBox");
+
+  const pass =
+    document.getElementById("pass");
+
+  const error =
+    document.getElementById("error");
+
+
+  if(pass.value === PASSWORD){
+
+    loginBox.style.display="none";
+    appBox.style.display="block";
+
+    loadProducts();
+    loadSubs();
+
+  }else{
+
+    error.innerText = "Wrong password";
+
+  }
+}
+
+
+function logout(){
+  location.reload();
+}
+
+
+/* ================= TABS ================= */
+
+function openTab(n){
+
+  document.querySelectorAll(".tab")
+    .forEach(t=>t.classList.remove("active"));
+
+  document.querySelectorAll(".card")
+    .forEach(c=>c.classList.remove("active"));
+
+  document.querySelectorAll(".tab")[n-1]
+    .classList.add("active");
+
+  document.getElementById("tab"+n)
+    .classList.add("active");
+}
+
+
+/* ================= PRODUCTS ================= */
+
+function loadProducts(){
+
+  fetch(API+"?action=getProducts")
+    .then(r=>r.json())
+    .then(data=>{
+
+      const table =
+        document.getElementById("prodTable");
+
+
+      table.innerHTML = `
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Stock</th>
+          <th>Save</th>
+          <th>Delete</th>
+        </tr>
+      `;
+
+
+      data.forEach(p=>{
+
+        const row = table.insertRow();
+
+        row.innerHTML = `
+
+          <td>${p[0]}</td>
+          <td>${p[1]}</td>
+          <td>${p[2]}</td>
+
+          <td>
+            <input
+              id="s${p[0]}"
+              value="${p[3]}"
+              style="width:60px"
+            >
+          </td>
+
+          <td>
+            <button class="btn"
+              onclick="updateStock(${p[0]})">
+              Save
+            </button>
+          </td>
+
+          <td>
+            <button class="btn danger"
+              onclick="deleteProduct(${p[0]})">
+              ❌
+            </button>
+          </td>
+
+        `;
+      });
+
+    });
+}
+
+
+/* ================= SUBMISSIONS ================= */
+
+function loadSubs(){
+
+  fetch(API+"?action=getSubs")
+    .then(r=>r.json())
+    .then(data=>{
+
+      const table =
+        document.getElementById("subTable");
+
+
+      table.innerHTML = `
+        <tr>
+          <th>Time</th>
+          <th>Name</th>
+          <th>Class</th>
+          <th>Phone</th>
+          <th>Email</th>
+          <th>Items</th>
+          <th>Purpose</th>
+          <th>Members</th>
+          <th>GitHub</th>
+          <th>Return</th>
+        </tr>
+      `;
+
+
+      data.forEach(row=>{
+
+        const tr = table.insertRow();
+
+        row.forEach(col=>{
+          tr.insertCell().innerText = col;
+        });
+
+      });
+
+    });
+}
+
+
+/* ================= ADD PRODUCT ================= */
+
+function addProduct(){
+
+  const name =
+    document.getElementById("pName").value;
+
+  const cat =
+    document.getElementById("pCat").value;
+
+  const stock =
+    document.getElementById("pStock").value;
+
+
+  if(!name || !cat || !stock){
+    alert("Fill all fields");
+    return;
+  }
+
+  if(isNaN(stock)){
+    alert("Stock must be number");
+    return;
+  }
+
+
+  fetch(API,{
+    method:"POST",
+    mode:"no-cors",
+
+    body:JSON.stringify({
+      action:"addProduct",
+      name:name,
+      category:cat,
+      stock:stock
+    })
+  });
+
+
+  alert("Product Added");
+
+  document.getElementById("pName").value="";
+  document.getElementById("pCat").value="";
+  document.getElementById("pStock").value="";
+
+  loadProducts();
+}
+
+
+/* ================= DELETE PRODUCT ================= */
+
+function deleteProduct(id){
+
+  if(!confirm("Delete this product?")){
+    return;
+  }
+
+
+  fetch(API,{
+    method:"POST",
+    mode:"no-cors",
+
+    body:JSON.stringify({
+      action:"deleteProduct",
+      id:id
+    })
+  });
+
+
+  alert("Product Deleted");
+
+  loadProducts();
+}
+
+
+/* ================= UPDATE STOCK ================= */
+
+function updateStock(id){
+
+  const input =
+    document.getElementById("s"+id);
+
+  const value = input.value;
+
+
+  if(value==="" || isNaN(value)){
+    alert("Invalid stock");
+    return;
+  }
+
+
+  fetch(API,{
+    method:"POST",
+    mode:"no-cors",
+
+    body:JSON.stringify({
+      action:"updateStock",
+      id:id,
+      stock:value
+    })
+  });
+
+
+  alert("Stock Updated");
+}
+
+</script>
+
+</body>
+</html>
