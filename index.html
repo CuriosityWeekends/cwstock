@@ -10,27 +10,19 @@
 
 <style>
 
-/* =============== THEME =============== */
-
+/* THEME */
 :root{
   --bg:#020617;
   --card:#020617;
   --border:#1e293b;
-
   --text:#f8fafc;
   --muted:#94a3b8;
-
   --primary:#2563eb;
   --success:#22c55e;
 }
 
-
-/* =============== RESET =============== */
-
-*{
-  box-sizing:border-box;
-  font-family:Inter,sans-serif;
-}
+/* RESET */
+*{box-sizing:border-box;font-family:Inter,sans-serif;}
 
 body{
   margin:0;
@@ -38,41 +30,26 @@ body{
   color:var(--text);
 }
 
-
-/* =============== LAYOUT =============== */
-
+/* LAYOUT */
 .app{
   max-width:900px;
   margin:auto;
   padding:25px;
-  min-height:100vh;
 }
 
-
-/* =============== HEADER =============== */
-
+/* HEADER */
 .header{
   display:flex;
   justify-content:space-between;
   align-items:center;
-
   padding:20px;
-
   border:1px solid var(--border);
   border-radius:14px;
 }
 
-.header h2{
-  margin:0;
-}
+.header span{color:var(--primary);}
 
-.header span{
-  color:var(--primary);
-}
-
-
-/* =============== CARDS =============== */
-
+/* CARD */
 .card{
   background:var(--card);
   border:1px solid var(--border);
@@ -81,9 +58,7 @@ body{
   margin-top:25px;
 }
 
-
-/* =============== FORM =============== */
-
+/* FORM */
 .grid{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -94,89 +69,54 @@ body{
   .grid{grid-template-columns:1fr}
 }
 
-label{
-  font-size:13px;
-  color:var(--muted);
-}
+label{font-size:13px;color:var(--muted);}
 
 input{
   width:100%;
   padding:12px;
-
   border-radius:10px;
   background:#020617;
   border:1px solid var(--border);
-
   color:var(--text);
   margin-top:6px;
 }
 
-input:focus{
-  outline:none;
-  border-color:var(--primary);
-}
-
-
-/* =============== PRODUCTS =============== */
-
+/* PRODUCTS */
 .product{
   display:flex;
   justify-content:space-between;
   align-items:center;
-
   padding:14px 16px;
   border-radius:12px;
-
   border:1px solid var(--border);
   margin-bottom:12px;
 }
 
-.product small{
-  color:var(--muted);
-}
+.product small{color:var(--muted);}
 
-
-/* =============== CART =============== */
-
+/* CART */
 .cart{
   margin-top:12px;
   padding:12px;
-
   border-radius:12px;
   background:#020617;
   border:1px solid var(--border);
 }
 
-
-/* =============== BUTTON =============== */
-
+/* BUTTON */
 .btn{
   padding:10px 16px;
   border:none;
   border-radius:8px;
-
   background:var(--primary);
   color:white;
-
   cursor:pointer;
-  font-weight:500;
 }
 
-.btn:hover{
-  opacity:.9;
-}
+.btn.success{background:var(--success);}
 
-.btn.success{
-  background:var(--success);
-}
-
-
-/* =============== PREVIEW =============== */
-
-.preview{
-  font-size:14px;
-  line-height:1.7;
-}
+/* PREVIEW */
+.preview{font-size:14px;line-height:1.7;}
 
 .preview hr{
   border:none;
@@ -184,69 +124,43 @@ input:focus{
   margin:12px 0;
 }
 
-
-/* =============== RETURN BOX =============== */
-
+/* RETURN */
 .return-box{
   border:1px solid var(--border);
   border-radius:12px;
   padding:15px;
   margin-bottom:12px;
-
   display:flex;
   justify-content:space-between;
-  align-items:center;
 }
 
-.return-box small{
-  color:var(--muted);
-}
-
-
-/* =============== STATUS =============== */
-
-.status{
-  text-align:center;
-  font-size:18px;
-  padding:25px;
-}
+/* STATUS */
+.status{text-align:center;font-size:18px;padding:25px;}
 
 </style>
 </head>
-
 
 <body>
 
 <div class="app">
 
-
 <!-- HEADER -->
 <div class="header">
-
 <h2>CuriosityWeekends <span>Stock</span></h2>
-
-<div style="color:var(--muted)">
-Inventory System
-</div>
-
+<div style="color:var(--muted)">Inventory System</div>
 </div>
 
 
-<!-- ================= ISSUE SECTION ================= -->
-
+<!-- ISSUE -->
 <div class="card">
 
-
 <h3>📦 Issue Items</h3>
-
-
-<!-- BASIC INFO -->
 
 <div class="grid">
 
 <div>
 <label>Name</label>
-<input id="name">
+<input id="userName" placeholder="Your name">
 </div>
 
 <div>
@@ -272,124 +186,89 @@ Inventory System
 </div>
 
 
-<!-- PRODUCTS -->
-
 <h4 style="margin-top:25px">Select Items</h4>
 
 <div id="products"></div>
 
-<div class="cart" id="cart">
-No items selected
-</div>
+<div class="cart" id="cart">No items selected</div>
 
-
-<!-- PROJECT -->
 
 <h4 style="margin-top:25px">Project Details</h4>
 
 <div class="grid">
 
-<div>
-<label>Purpose</label>
-<input id="purpose">
-</div>
-
-<div>
-<label>Members</label>
-<input id="members">
-</div>
-
-<div>
-<label>GitHub</label>
-<input id="git">
-</div>
+<div><label>Purpose</label><input id="purpose"></div>
+<div><label>Members</label><input id="members"></div>
+<div><label>GitHub</label><input id="git"></div>
 
 </div>
 
-
-<!-- PREVIEW -->
 
 <h4 style="margin-top:25px">Preview</h4>
 
 <div class="preview" id="preview"></div>
 
 
-<!-- SUBMIT -->
-
 <div style="margin-top:20px;text-align:center">
-
 <button class="btn" onclick="submitData()">
 Submit & Download PDF
 </button>
-
 </div>
 
 </div>
 
 
-<!-- ================= RETURN SECTION ================= -->
-
+<!-- RETURN -->
 <div class="card">
 
 <h3>🔁 Return Items</h3>
 
-<div id="returnList">
-Loading...
-</div>
+<div id="returnList">Loading...</div>
 
 </div>
 
 
-<!-- ================= STATUS ================= -->
-
+<!-- STATUS -->
 <div class="card" id="statusBox" style="display:none">
-
 <div class="status" id="statusText"></div>
-
 </div>
-
 
 </div>
 
 
 <script>
 
-/* ================= CONFIG ================= */
+/* CONFIG */
 
-const API =
-"https://script.google.com/macros/s/AKfycbwd_xE9NtNjLAjfYWZLjygRijPxFm090e2zYNNlkvJk8X-m-NbKu5AbREWR-sdJr0YQTw/exec";
-
+const API="https://script.google.com/macros/s/AKfycbwd_xE9NtNjLAjfYWZLjygRijPxFm090e2zYNNlkvJk8X-m-NbKu5AbREWR-sdJr0YQTw/exec";
 
 let cart=[];
 
 
-/* ================= LOAD PRODUCTS ================= */
+/* LOAD PRODUCTS */
 
 fetch(API+"?action=getProducts")
 .then(r=>r.json())
 .then(data=>{
 
-  let box=document.getElementById("products");
+  const box=document.getElementById("products");
 
   data.forEach(p=>{
 
-    let d=document.createElement("div");
+    const d=document.createElement("div");
 
     d.className="product";
 
     d.innerHTML=`
 
-      <div>
-        <b>${p[1]}</b><br>
-        <small>Stock: ${p[3]}</small>
-      </div>
+<div>
+<b>${p[1]}</b><br>
+<small>Stock: ${p[3]}</small>
+</div>
 
-      <button class="btn"
-        onclick="addItem('${p[1]}')">
-        Add
-      </button>
+<button class="btn" onclick="addItem('${p[1]}')">Add</button>
 
-    `;
+`;
 
     box.appendChild(d);
 
@@ -398,13 +277,13 @@ fetch(API+"?action=getProducts")
 });
 
 
-/* ================= CART ================= */
+/* CART */
 
 function addItem(name){
 
   let q=prompt("Enter quantity");
 
-  if(!q || q<=0) return;
+  if(!q||q<=0) return;
 
   cart.push({name,qty:+q});
 
@@ -414,7 +293,7 @@ function addItem(name){
 
 function renderCart(){
 
-  let box=document.getElementById("cart");
+  const box=document.getElementById("cart");
 
   if(!cart.length){
     box.innerHTML="No items selected";
@@ -433,11 +312,19 @@ function renderCart(){
 }
 
 
-/* ================= PREVIEW ================= */
+/* PREVIEW */
 
 function makePreview(){
 
-  let p=document.getElementById("preview");
+  const n=document.getElementById("userName").value;
+  const c=cls.value;
+  const ph=phone.value;
+  const em=email.value;
+  const pu=purpose.value;
+  const me=members.value;
+  const gi=git.value;
+  const re=ret.value;
+
 
   let items="";
 
@@ -446,12 +333,12 @@ function makePreview(){
   });
 
 
-  p.innerHTML=`
+  preview.innerHTML=`
 
-<b>Name:</b> ${name.value}<br>
-<b>Class:</b> ${cls.value}<br>
-<b>Phone:</b> ${phone.value}<br>
-<b>Email:</b> ${email.value}<br>
+<b>Name:</b> ${n}<br>
+<b>Class:</b> ${c}<br>
+<b>Phone:</b> ${ph}<br>
+<b>Email:</b> ${em}<br>
 
 <hr>
 
@@ -459,18 +346,17 @@ function makePreview(){
 
 <hr>
 
-<b>Purpose:</b> ${purpose.value}<br>
-<b>Members:</b> ${members.value}<br>
-<b>GitHub:</b> ${git.value}<br>
+<b>Purpose:</b> ${pu}<br>
+<b>Members:</b> ${me}<br>
+<b>GitHub:</b> ${gi}<br>
 
-<b>Return:</b> ${ret.value}
+<b>Return:</b> ${re}
 
 `;
-
 }
 
 
-/* ================= SUBMIT ================= */
+/* SUBMIT */
 
 function submitData(){
 
@@ -480,20 +366,16 @@ function submitData(){
   }
 
 
-  document.getElementById("statusBox")
-    .style.display="block";
-
+  statusBox.style.display="block";
   statusText.innerHTML="⏳ Submitting...";
 
 
-  let data={
+  const data={
 
-    name:name.value,
+    name:document.getElementById("userName").value,
     class:cls.value,
     phone:phone.value,
     email:email.value,
-
-    items:formatItems(),
 
     purpose:purpose.value,
     members:members.value,
@@ -514,9 +396,7 @@ function submitData(){
 
   setTimeout(()=>{
 
-    statusText.innerHTML=
-      "<span style='color:var(--success)'>✔ Submitted</span><br><br>"+
-      "Download and submit to manager.";
+    statusText.innerHTML="✔ Submitted";
 
     makePDF(data);
 
@@ -530,108 +410,37 @@ function submitData(){
 }
 
 
-/* ================= FORMAT ================= */
-
-function formatItems(){
-
-  let t="";
-
-  cart.forEach(i=>{
-    t+=`${i.name} x${i.qty}, `;
-  });
-
-  return t.slice(0,-2);
-}
-
-
-/* ================= PDF ================= */
+/* PDF */
 
 function makePDF(d){
 
-  const { jsPDF } = window.jspdf;
+  const {jsPDF}=window.jspdf;
 
-  let pdf=new jsPDF();
-
-
-  pdf.setFillColor(37,99,235);
-  pdf.rect(0,0,210,22,"F");
-
-  pdf.setTextColor(255,255,255);
-  pdf.setFontSize(15);
+  const pdf=new jsPDF();
 
   pdf.text("CW Inventory Receipt",105,15,{align:"center"});
 
-
-  pdf.setTextColor(0,0,0);
-  pdf.setFontSize(11);
-
   let y=30;
 
-
-  pdf.roundedRect(15,y,180,30,3,3);
-
-  pdf.text("Student Details",18,y+7);
-
-  y+=12;
-
-  pdf.text("Name: "+d.name,20,y);
-  pdf.text("Class: "+d.class,120,y);
-
-  y+=7;
-
-  pdf.text("Phone: "+d.phone,20,y);
-  pdf.text("Email: "+d.email,120,y);
-
-  y+=18;
-
-
-  pdf.text("Issued Items",18,y);
-  y+=5;
-
-  pdf.line(15,y,195,y);
-  y+=6;
+  pdf.text("Name: "+d.name,20,y); y+=7;
+  pdf.text("Class: "+d.class,20,y); y+=7;
+  pdf.text("Phone: "+d.phone,20,y); y+=7;
+  pdf.text("Email: "+d.email,20,y); y+=10;
 
 
   d.cart.forEach(i=>{
-
-    pdf.text(i.name,25,y);
-    pdf.text("x"+i.qty,170,y);
-
+    pdf.text(i.name+" x"+i.qty,20,y);
     y+=6;
   });
 
 
-  y+=6;
-
-
-  pdf.text("Purpose: "+d.purpose,20,y); y+=6;
-  pdf.text("Members: "+d.members,20,y); y+=6;
-  pdf.text("GitHub: "+d.github,20,y); y+=10;
-
-
-  pdf.text("Return Date: "+d.returnDate,20,y);
-  y+=14;
-
-  pdf.text("Lab Seal & Signature:",20,y);
-
-  pdf.roundedRect(20,y+4,60,22,2,2);
-
-
-  pdf.setFontSize(9);
-
-  pdf.text(
-    "Generated by CuriosityWeekends",
-    105,
-    290,
-    {align:"center"}
-  );
-
+  pdf.text("Return: "+d.returnDate,20,y+10);
 
   pdf.save("CW_Receipt.pdf");
 }
 
 
-/* ================= RETURNS ================= */
+/* RETURNS */
 
 function loadReturns(){
 
@@ -639,7 +448,7 @@ function loadReturns(){
   .then(r=>r.json())
   .then(data=>{
 
-    let box=document.getElementById("returnList");
+    const box=document.getElementById("returnList");
 
     box.innerHTML="";
 
@@ -654,8 +463,7 @@ function loadReturns(){
 
       const row=i+2;
 
-
-      let d=document.createElement("div");
+      const d=document.createElement("div");
 
       d.className="return-box";
 
@@ -663,14 +471,11 @@ function loadReturns(){
 
 <div>
 <b>${r[1]}</b><br>
-${r[5]}<br>
-<small>${r[4]}</small>
+${r[5]}
 </div>
 
 <button class="btn success"
- onclick="returnItem(${row})">
-Return
-</button>
+onclick="returnItem(${row})">Return</button>
 
 `;
 
@@ -690,7 +495,6 @@ function returnItem(row){
   fetch(API,{
     method:"POST",
     mode:"no-cors",
-
     body:JSON.stringify({
       action:"returnItem",
       row:row
@@ -704,7 +508,7 @@ function returnItem(row){
 }
 
 
-/* ================= INIT ================= */
+/* INIT */
 
 loadReturns();
 
