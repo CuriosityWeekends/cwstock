@@ -1,518 +1,511 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>CW Stock System</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-<style>
-
-/* THEME */
-:root{
-  --bg:#020617;
-  --card:#020617;
-  --border:#1e293b;
-  --text:#f8fafc;
-  --muted:#94a3b8;
-  --primary:#2563eb;
-  --success:#22c55e;
-}
-
-/* RESET */
-*{box-sizing:border-box;font-family:Inter,sans-serif;}
-
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-}
-
-/* LAYOUT */
-.app{
-  max-width:900px;
-  margin:auto;
-  padding:25px;
-}
-
-/* HEADER */
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:20px;
-  border:1px solid var(--border);
-  border-radius:14px;
-}
-
-.header span{color:var(--primary);}
-
-/* CARD */
-.card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:25px;
-  margin-top:25px;
-}
-
-/* FORM */
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:20px;
-}
-
-@media(max-width:650px){
-  .grid{grid-template-columns:1fr}
-}
-
-label{font-size:13px;color:var(--muted);}
-
-input{
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  background:#020617;
-  border:1px solid var(--border);
-  color:var(--text);
-  margin-top:6px;
-}
-
-/* PRODUCTS */
-.product{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:14px 16px;
-  border-radius:12px;
-  border:1px solid var(--border);
-  margin-bottom:12px;
-}
-
-.product small{color:var(--muted);}
-
-/* CART */
-.cart{
-  margin-top:12px;
-  padding:12px;
-  border-radius:12px;
-  background:#020617;
-  border:1px solid var(--border);
-}
-
-/* BUTTON */
-.btn{
-  padding:10px 16px;
-  border:none;
-  border-radius:8px;
-  background:var(--primary);
-  color:white;
-  cursor:pointer;
-}
-
-.btn.success{background:var(--success);}
-
-/* PREVIEW */
-.preview{font-size:14px;line-height:1.7;}
-
-.preview hr{
-  border:none;
-  border-top:1px solid var(--border);
-  margin:12px 0;
-}
-
-/* RETURN */
-.return-box{
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:15px;
-  margin-bottom:12px;
-  display:flex;
-  justify-content:space-between;
-}
-
-/* STATUS */
-.status{text-align:center;font-size:18px;padding:25px;}
-
-</style>
+  <meta charset="UTF-8">
+  <title>CW Stock System | Inventory Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 
 <body>
 
-<div class="app">
+  <div class="container animate-fade">
+
+    <!-- HEADER -->
+    <header>
+      <div>
+        <h1>Curiosity<span>Weekends</span></h1>
+        <div class="subtitle">Inventory System</div>
+      </div>
+      <div style="text-align: right">
+        <div style="font-weight: 600; font-size: 14px;">Public Portal</div>
+        <div id="date-display" style="font-size: 12px; color: var(--muted)"></div>
+      </div>
+    </header>
+
+
+    <!-- ISSUE -->
+    <div class="card">
+      <h2>📦 Issue Items</h2>
+
+      <div class="form-grid">
+        <div class="input-group">
+          <label>Full Name</label>
+          <input id="userName" placeholder="Enter your name" oninput="makePreview()">
+        </div>
+        <div class="input-group">
+          <label>Class/Dept</label>
+          <input id="cls" placeholder="e.g. CS-A" oninput="makePreview()">
+        </div>
+        <div class="input-group">
+          <label>Phone Number</label>
+          <input id="phone" placeholder="+1..." oninput="makePreview()">
+        </div>
+        <div class="input-group">
+          <label>Email Address</label>
+          <input id="email" type="email" placeholder="email@example.com" oninput="makePreview()">
+        </div>
+        <div class="input-group">
+          <label>Return Date</label>
+          <input id="ret" type="date" oninput="makePreview()">
+        </div>
+      </div>
+
+      <h3 style="margin: 32px 0 16px; font-size: 18px;">Available Items</h3>
+
+      <div class="controls-row">
+        <div class="search-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Search for equipment, microcontrollers, sensors..."
+            oninput="filterProducts()">
+        </div>
+        <div id="categoryChips" class="chips">
+          <button class="chip active" onclick="setCategory('All', this)">All</button>
+        </div>
+      </div>
+
+      <div id="products" class="products-list">
+        <!-- Skeleton Loaders -->
+        <div class="product-item skeleton" style="height: 140px"></div>
+        <div class="product-item skeleton" style="height: 140px"></div>
+        <div class="product-item skeleton" style="height: 140px"></div>
+      </div>
+
+      <div class="cart-box" id="cart-container">
+        <h4 style="font-size: 14px; margin-bottom: 12px; color: var(--muted)">Current Selection</h4>
+        <div id="cart">No items selected</div>
+      </div>
+
+      <h3 style="margin: 32px 0 16px; font-size: 18px;">Project Context</h3>
+      <div class="form-grid">
+        <div class="input-group">
+          <label>Purpose</label>
+          <input id="purpose" placeholder="Why are you borrowing?" oninput="makePreview()">
+        </div>
+        <div class="input-group">
+          <label>Group Members</label>
+          <input id="members" placeholder="Comma separated names" oninput="makePreview()">
+        </div>
+        <div class="input-group">
+          <label>GitHub Repository</label>
+          <input id="git" placeholder="https://github.com/..." oninput="makePreview()">
+        </div>
+      </div>
+
+      <h3 style="margin: 32px 0 16px; font-size: 18px;">Verification Preview</h3>
+      <div class="preview-box" id="preview">
+        <div style="text-align: center; color: var(--muted); padding: 10px;">Fill out the form to see preview</div>
+      </div>
+
+      <div style="margin-top: 32px; text-align: center">
+        <button class="btn btn-primary" onclick="submitData()" style="width: 100%; max-width: 300px;">
+          Confirm & Download Receipt
+        </button>
+      </div>
+    </div>
+
+
+    <!-- RETURN -->
+    <div class="card">
+      <h2>🔁 Active Issues</h2>
+      <div id="returnList" class="products-list">Loading pending returns...</div>
+    </div>
 
-<!-- HEADER -->
-<div class="header">
-<h2>CuriosityWeekends <span>Stock</span></h2>
-<div style="color:var(--muted)">Inventory System</div>
-</div>
 
+    <!-- STATUS MODAL / TOAST -->
+    <div id="statusToast"
+      style="display:none; position: fixed; bottom: 24px; right: 24px; padding: 16px 24px; background: var(--primary); color: white; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); z-index: 100; transition: var(--transition)">
+      <span id="statusText">⏳ Processing...</span>
+    </div>
 
-<!-- ISSUE -->
-<div class="card">
+  </div>
 
-<h3>📦 Issue Items</h3>
 
-<div class="grid">
+  <script>
+    const API = "https://script.google.com/macros/s/AKfycbwd_xE9NtNjLAjfYWZLjygRijPxFm090e2zYNNlkvJk8X-m-NbKu5AbREWR-sdJr0YQTw/exec";
+    let cart = [];
+    let allProducts = [];
+    let currentCategory = 'All';
 
-<div>
-<label>Name</label>
-<input id="userName" placeholder="Your name">
-</div>
-
-<div>
-<label>Class</label>
-<input id="cls">
-</div>
-
-<div>
-<label>Phone</label>
-<input id="phone">
-</div>
-
-<div>
-<label>Email</label>
-<input id="email">
-</div>
-
-<div>
-<label>Return Date</label>
-<input id="ret" type="date">
-</div>
-
-</div>
-
-
-<h4 style="margin-top:25px">Select Items</h4>
-
-<div id="products"></div>
-
-<div class="cart" id="cart">No items selected</div>
-
-
-<h4 style="margin-top:25px">Project Details</h4>
-
-<div class="grid">
-
-<div><label>Purpose</label><input id="purpose"></div>
-<div><label>Members</label><input id="members"></div>
-<div><label>GitHub</label><input id="git"></div>
-
-</div>
-
-
-<h4 style="margin-top:25px">Preview</h4>
-
-<div class="preview" id="preview"></div>
-
-
-<div style="margin-top:20px;text-align:center">
-<button class="btn" onclick="submitData()">
-Submit & Download PDF
-</button>
-</div>
-
-</div>
-
-
-<!-- RETURN -->
-<div class="card">
-
-<h3>🔁 Return Items</h3>
-
-<div id="returnList">Loading...</div>
-
-</div>
-
-
-<!-- STATUS -->
-<div class="card" id="statusBox" style="display:none">
-<div class="status" id="statusText"></div>
-</div>
-
-</div>
-
-
-<script>
-
-/* CONFIG */
-
-const API="https://script.google.com/macros/s/AKfycbwd_xE9NtNjLAjfYWZLjygRijPxFm090e2zYNNlkvJk8X-m-NbKu5AbREWR-sdJr0YQTw/exec";
-
-let cart=[];
-
-
-/* LOAD PRODUCTS */
-
-fetch(API+"?action=getProducts")
-.then(r=>r.json())
-.then(data=>{
-
-  const box=document.getElementById("products");
-
-  data.forEach(p=>{
-
-    const d=document.createElement("div");
-
-    d.className="product";
-
-    d.innerHTML=`
-
-<div>
-<b>${p[1]}</b><br>
-<small>Stock: ${p[3]}</small>
-</div>
-
-<button class="btn" onclick="addItem('${p[1]}')">Add</button>
-
-`;
-
-    box.appendChild(d);
-
-  });
-
-});
-
-
-/* CART */
-
-function addItem(name){
-
-  let q=prompt("Enter quantity");
-
-  if(!q||q<=0) return;
-
-  cart.push({name,qty:+q});
-
-  renderCart();
-}
-
-
-function renderCart(){
-
-  const box=document.getElementById("cart");
-
-  if(!cart.length){
-    box.innerHTML="No items selected";
-    return;
-  }
-
-  let h="<b>Selected Items</b><br>";
-
-  cart.forEach(i=>{
-    h+=`• ${i.name} x${i.qty}<br>`;
-  });
-
-  box.innerHTML=h;
-
-  makePreview();
-}
-
-
-/* PREVIEW */
-
-function makePreview(){
-
-  const n=document.getElementById("userName").value;
-  const c=cls.value;
-  const ph=phone.value;
-  const em=email.value;
-  const pu=purpose.value;
-  const me=members.value;
-  const gi=git.value;
-  const re=ret.value;
-
-
-  let items="";
-
-  cart.forEach(i=>{
-    items+=`• ${i.name} x${i.qty}<br>`;
-  });
-
-
-  preview.innerHTML=`
-
-<b>Name:</b> ${n}<br>
-<b>Class:</b> ${c}<br>
-<b>Phone:</b> ${ph}<br>
-<b>Email:</b> ${em}<br>
-
-<hr>
-
-<b>Items:</b><br>${items}
-
-<hr>
-
-<b>Purpose:</b> ${pu}<br>
-<b>Members:</b> ${me}<br>
-<b>GitHub:</b> ${gi}<br>
-
-<b>Return:</b> ${re}
-
-`;
-}
-
-
-/* SUBMIT */
-
-function submitData(){
-
-  if(!cart.length){
-    alert("Add items first");
-    return;
-  }
-
-
-  statusBox.style.display="block";
-  statusText.innerHTML="⏳ Submitting...";
-
-
-  const data={
-
-    name:document.getElementById("userName").value,
-    class:cls.value,
-    phone:phone.value,
-    email:email.value,
-
-    purpose:purpose.value,
-    members:members.value,
-    github:git.value,
-
-    returnDate:ret.value,
-
-    cart:cart
-  };
-
-
-  fetch(API,{
-    method:"POST",
-    mode:"no-cors",
-    body:JSON.stringify(data)
-  });
-
-
-  setTimeout(()=>{
-
-    statusText.innerHTML="✔ Submitted";
-
-    makePDF(data);
-
-    cart=[];
-    renderCart();
-
-    loadReturns();
-
-  },1500);
-
-}
-
-
-/* PDF */
-
-function makePDF(d){
-
-  const {jsPDF}=window.jspdf;
-
-  const pdf=new jsPDF();
-
-  pdf.text("CW Inventory Receipt",105,15,{align:"center"});
-
-  let y=30;
-
-  pdf.text("Name: "+d.name,20,y); y+=7;
-  pdf.text("Class: "+d.class,20,y); y+=7;
-  pdf.text("Phone: "+d.phone,20,y); y+=7;
-  pdf.text("Email: "+d.email,20,y); y+=10;
-
-
-  d.cart.forEach(i=>{
-    pdf.text(i.name+" x"+i.qty,20,y);
-    y+=6;
-  });
-
-
-  pdf.text("Return: "+d.returnDate,20,y+10);
-
-  pdf.save("CW_Receipt.pdf");
-}
-
-
-/* RETURNS */
-
-function loadReturns(){
-
-  fetch(API+"?action=getIssued")
-  .then(r=>r.json())
-  .then(data=>{
-
-    const box=document.getElementById("returnList");
-
-    box.innerHTML="";
-
-
-    if(!data.length){
-      box.innerHTML="✅ No pending returns";
-      return;
-    }
-
-
-    data.forEach((r,i)=>{
-
-      const row=i+2;
-
-      const d=document.createElement("div");
-
-      d.className="return-box";
-
-      d.innerHTML=`
-
-<div>
-<b>${r[1]}</b><br>
-${r[5]}
-</div>
-
-<button class="btn success"
-onclick="returnItem(${row})">Return</button>
-
-`;
-
-      box.appendChild(d);
-
+    // Current Date display
+    document.getElementById('date-display').innerText = new Date().toLocaleDateString('en-US', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
 
-  });
-}
+    // Load persisted user data
+    function loadUserData() {
+      const fields = ['userName', 'cls', 'phone', 'email'];
+      fields.forEach(f => {
+        const val = localStorage.getItem('cw_' + f);
+        if (val) {
+          document.getElementById(f).value = val;
+        }
+        document.getElementById(f).addEventListener('input', (e) => {
+          localStorage.setItem('cw_' + f, e.target.value);
+        });
+      });
+    }
 
+    /* LOAD PRODUCTS */
+    async function loadProducts() {
+      try {
+        const r = await fetch(API + "?action=getProducts");
+        allProducts = await r.json();
 
-function returnItem(row){
+        // Generate Category Chips
+        const categories = ['All', ...new Set(allProducts.map(p => p[2]))];
+        const chipsBox = document.getElementById("categoryChips");
+        chipsBox.innerHTML = '';
+        categories.forEach(cat => {
+          const btn = document.createElement('button');
+          btn.className = `chip ${cat === currentCategory ? 'active' : ''}`;
+          btn.innerText = cat;
+          btn.onclick = () => setCategory(cat, btn);
+          chipsBox.appendChild(btn);
+        });
 
-  if(!confirm("Confirm return?")) return;
+        renderProducts(allProducts);
+      } catch (e) {
+        console.error(e);
+        document.getElementById("products").innerText = "Error loading inventory.";
+      }
+    }
 
+    function renderProducts(products) {
+      const box = document.getElementById("products");
+      box.innerHTML = "";
 
-  fetch(API,{
-    method:"POST",
-    mode:"no-cors",
-    body:JSON.stringify({
-      action:"returnItem",
-      row:row
-    })
-  });
+      if (products.length === 0) {
+        box.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted)">No items found matching your search.</div>';
+        return;
+      }
 
+      products.forEach(p => {
+        const item = document.createElement("div");
+        item.className = "product-item animate-fade";
+        item.innerHTML = `
+              <div class="product-details">
+                  <div class="product-info">
+                      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                        <span style="font-size: 11px; text-transform: uppercase; color: var(--primary); font-weight: 700;">${p[2]}</span>
+                        ${p[3] < 3 ? '<span class="badge badge-low">Low Stock</span>' : ''}
+                      </div>
+                      <h3>${p[1]}</h3>
+                      <p>Currently <span style="font-size: 13px; font-weight: 600; color: ${p[3] > 0 ? 'var(--success)' : 'var(--danger)'}">${p[3]} available</span></p>
+                  </div>
+                  <button class="btn btn-primary" style="width: 100%; font-size: 13px;" onclick="addItem('${p[1]}', ${p[3]})" ${p[3] <= 0 ? 'disabled' : ''}>
+                      ${p[3] > 0 ? 'Add to Selection' : 'Out of Stock'}
+                  </button>
+              </div>
+          `;
+        box.appendChild(item);
+      });
+    }
 
-  alert("Returned");
+    /* FILTER LOGIC */
+    function filterProducts() {
+      const term = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allProducts.filter(p => {
+        const matchesSearch = p[1].toLowerCase().includes(term) || p[2].toLowerCase().includes(term);
+        const matchesCat = currentCategory === 'All' || p[2] === currentCategory;
+        return matchesSearch && matchesCat;
+      });
+      renderProducts(filtered);
+    }
 
-  loadReturns();
-}
+    function setCategory(cat, btn) {
+      currentCategory = cat;
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      filterProducts();
+    }
 
+    /* CART ACTIONS */
+    function addItem(name, maxStock) {
+      let q = prompt(`Enter quantity for ${name} (Max: ${maxStock})`);
+      if (!q || q <= 0) return;
+      if (parseInt(q) > maxStock) {
+        alert("Quantity exceeds available stock!");
+        return;
+      }
 
-/* INIT */
+      const existing = cart.find(i => i.name === name);
+      if (existing) {
+        existing.qty = parseInt(q);
+      } else {
+        cart.push({ name, qty: parseInt(q) });
+      }
 
-loadReturns();
+      renderCart();
+    }
 
-</script>
+    function removeCartItem(index) {
+      cart.splice(index, 1);
+      renderCart();
+    }
+
+    function renderCart() {
+      const box = document.getElementById("cart");
+      if (!cart.length) {
+        box.innerHTML = '<div style="color: var(--muted); font-size: 13px;">No items selected</div>';
+        makePreview();
+        return;
+      }
+
+      let h = '<div style="display: grid; gap: 8px;">';
+      cart.forEach((i, idx) => {
+        h += `
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px;">
+                    <span style="font-size: 14px;">${i.name} <b style="color: var(--primary)">x${i.qty}</b></span>
+                    <button class="btn btn-danger" style="padding: 4px 8px; font-size: 10px;" onclick="removeCartItem(${idx})">Remove</button>
+                </div>
+            `;
+      });
+      h += '</div>';
+      box.innerHTML = h;
+      makePreview();
+    }
+
+    /* PREVIEW GENERATION */
+    function makePreview() {
+      const n = document.getElementById("userName").value || "---";
+      const c = document.getElementById("cls").value || "---";
+      const ph = document.getElementById("phone").value || "---";
+      const em = document.getElementById("email").value || "---";
+      const pu = document.getElementById("purpose").value || "---";
+      const me = document.getElementById("members").value || "---";
+      const gi = document.getElementById("git").value || "---";
+      const re = document.getElementById("ret").value || "---";
+
+      let items = "";
+      cart.forEach(i => {
+        items += `<li>${i.name} x${i.qty}</li>`;
+      });
+
+      document.getElementById("preview").innerHTML = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <div style="font-size: 11px; text-transform: uppercase; color: var(--muted)">Issuer</div>
+                    <div style="font-weight: 500">${n}</div>
+                </div>
+                <div>
+                    <div style="font-size: 11px; text-transform: uppercase; color: var(--muted)">Class</div>
+                    <div style="font-weight: 500">${c}</div>
+                </div>
+                <div>
+                    <div style="font-size: 11px; text-transform: uppercase; color: var(--muted)">Contact</div>
+                    <div style="font-weight: 500">${ph}</div>
+                </div>
+                <div>
+                    <div style="font-size: 11px; text-transform: uppercase; color: var(--muted)">Expected Return</div>
+                    <div style="font-weight: 500; color: var(--primary)">${re}</div>
+                </div>
+            </div>
+            
+            <hr class="preview-divider">
+            
+            <div style="font-size: 11px; text-transform: uppercase; color: var(--muted); margin-bottom: 5px;">Inventory Items</div>
+            <ul style="margin-left: 18px; font-weight: 500;">
+                ${items || '<li style="color: var(--danger)">No items selected</li>'}
+            </ul>
+            
+            <hr class="preview-divider">
+            
+            <div style="font-size: 11px; text-transform: uppercase; color: var(--muted); margin-bottom: 5px;">Project Purpose</div>
+            <div style="font-weight: 400; font-style: italic;">"${pu}"</div>
+        `;
+    }
+
+    /* SUBMISSION logic */
+    function showToast(text, duration = 3000) {
+      const t = document.getElementById("statusToast");
+      const txt = document.getElementById("statusText");
+      t.style.display = "block";
+      txt.innerHTML = text;
+
+      if (duration) {
+        setTimeout(() => {
+          t.style.display = "none";
+        }, duration);
+      }
+    }
+
+    function submitData() {
+      if (!cart.length) {
+        alert("Please select at least one item.");
+        return;
+      }
+      if (!document.getElementById("userName").value) {
+        alert("Please enter your name.");
+        return;
+      }
+
+      showToast("⏳ Submitting registration...", 0);
+
+      const data = {
+        name: document.getElementById("userName").value,
+        class: document.getElementById("cls").value,
+        phone: document.getElementById("phone").value,
+        email: document.getElementById("email").value,
+        purpose: document.getElementById("purpose").value,
+        members: document.getElementById("members").value,
+        github: document.getElementById("git").value,
+        returnDate: document.getElementById("ret").value,
+        cart: cart
+      };
+
+      fetch(API, {
+        method: "POST",
+        mode: "no-cors",
+        body: JSON.stringify(data)
+      });
+
+      setTimeout(() => {
+        showToast("✔ Submission Successful!");
+        makePDF(data);
+
+        // Reset cart only, keep user info synced to localStorage
+        cart = [];
+        renderCart();
+        loadReturns();
+      }, 1500);
+    }
+
+    function makePDF(d) {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF();
+
+      // Premium PDF design basics
+      pdf.setFillColor(15, 23, 42); // bg color
+      pdf.rect(0, 0, 210, 40, 'F');
+
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(22);
+      pdf.text("CuriosityWeekends", 20, 20);
+      pdf.setFontSize(10);
+      pdf.text("OFFICIAL INVENTORY RECEIPT", 20, 28);
+
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFontSize(12);
+      pdf.text("Issued To: " + d.name, 20, 55);
+      pdf.text("Class: " + d.class, 20, 62);
+      pdf.text("Date: " + new Date().toLocaleDateString(), 150, 55);
+
+      pdf.setDrawColor(200, 200, 200);
+      pdf.line(20, 70, 190, 70);
+
+      pdf.setFontSize(14);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("ITEMS BORROWED", 20, 80);
+
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(11);
+      let y = 90;
+      d.cart.forEach(i => {
+        pdf.text(`• ${i.name}`, 25, y);
+        pdf.text(`Qty: ${i.qty}`, 150, y);
+        y += 8;
+      });
+
+      pdf.line(20, y + 10, 190, y + 10);
+      pdf.text("Expected Return: " + d.returnDate, 20, y + 20);
+
+      pdf.save(`CW_Receipt_${d.name.replace(/\s+/g, '_')}.pdf`);
+    }
+
+    /* RETURNS HANDLING */
+    async function loadReturns() {
+      try {
+        const r = await fetch(API + "?action=getIssued");
+        const data = await r.json();
+        const box = document.getElementById("returnList");
+        box.innerHTML = "";
+
+        // Map original row indices so we target the correct spreadsheet row even after filtering
+        const processedData = data.map((r, i) => ({ originalRow: i + 2, data: r }));
+
+        const activeReturns = processedData.filter(item => {
+          const row = item.data;
+          if (!row || row.length < 2) return false;
+          return !row.some(cell => String(cell).toLowerCase().includes('returned'));
+        });
+
+        if (!activeReturns.length) {
+          box.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--success); font-weight: 500;">✅ No pending returns</div>';
+          return;
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        activeReturns.forEach((item) => {
+          const r = item.data;
+          const rowIdx = item.originalRow;
+
+          const returnDate = new Date(r[9]);
+          const isOverdue = returnDate < today;
+
+          const itemEl = document.createElement("div");
+          itemEl.className = "product-item animate-fade";
+          itemEl.innerHTML = `
+                <div class="product-details">
+                    <div class="product-info">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                           <span style="font-size: 11px; text-transform: uppercase; color: var(--muted);">${r[5]}</span>
+                           ${isOverdue ? '<span class="badge badge-overdue">Overdue</span>' : ''}
+                        </div>
+                        <h3>${r[1]}</h3>
+                        <p>Borrowed by: <b>${r[1]}</b> • Due: <span class="${isOverdue ? 'overdue-text' : ''}" style="color: var(--primary)">${r[9]}</span></p>
+                    </div>
+                    <button class="btn btn-success" style="width: 100%; font-size: 13px;" onclick="returnItem(${rowIdx})">
+                        Confirm Return
+                    </button>
+                </div>
+            `;
+          box.appendChild(itemEl);
+        });
+      } catch (e) {
+        console.error(e);
+        document.getElementById("returnList").innerText = "Error loading returns.";
+      }
+    }
+
+    async function returnItem(row) {
+      if (!confirm("Confirm that this item has been returned in good condition?")) return;
+
+      showToast("⏳ Registering return...", 0);
+
+      try {
+        await fetch(API, {
+          method: "POST",
+          mode: "no-cors",
+          body: JSON.stringify({
+            action: "returnItem",
+            row: row
+          })
+        });
+
+        // Google Apps Script is slow. Wait 2 seconds before refreshing to ensure 
+        // the spreadsheet has updated and the cache is likely cleared.
+        setTimeout(() => {
+          showToast("✔ Item successfully returned!");
+          loadReturns();
+          loadProducts();
+        }, 2000);
+
+      } catch (e) {
+        showToast("❌ Error processing return");
+      }
+    }
+
+    // Initialize
+    loadUserData();
+    loadProducts();
+    loadReturns();
+  </script>
 
 </body>
+
 </html>
