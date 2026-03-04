@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;}
 :root{
@@ -232,6 +233,91 @@ padding-left:17px;
 .itemCard .meta{color:var(--text2);font-size:0.88rem;margin:6px 0 10px;line-height:1.5;}
 .itemCard .name{font-weight:600;font-size:1rem;color:var(--text);}
 
+.takeGrid{
+display:grid;
+grid-template-columns:1fr;
+gap:10px;
+}
+
+.fieldLabel{
+display:block;
+margin-top:12px;
+margin-bottom:6px;
+font-size:0.85rem;
+color:var(--text2);
+}
+
+.rowActions{
+display:flex;
+gap:10px;
+align-items:center;
+flex-wrap:wrap;
+margin-top:12px;
+}
+
+.ghostBtn{
+background:transparent;
+border:1px solid var(--border);
+color:var(--text);
+}
+.ghostBtn:hover{box-shadow:none;background:rgba(255,255,255,0.04);}
+
+.itemRows{
+display:flex;
+flex-direction:column;
+gap:10px;
+margin-top:10px;
+}
+
+.itemRow{
+display:grid;
+grid-template-columns:1fr 96px 44px;
+gap:10px;
+align-items:center;
+padding:12px;
+border-radius:var(--radius-sm);
+border:1px solid var(--border);
+background:var(--surface);
+}
+
+.itemRow select,.itemRow input{
+margin-top:0;
+}
+
+.iconBtn{
+margin-top:0;
+padding:10px 12px;
+border-radius:12px;
+background:rgba(255,71,87,0.14);
+color:#ff8a96;
+border:1px solid rgba(255,71,87,0.22);
+}
+.iconBtn:hover{box-shadow:none;transform:translateY(-1px);background:rgba(255,71,87,0.2);}
+
+.helperText{
+margin:8px 0 0;
+font-size:0.82rem;
+color:var(--text2);
+line-height:1.4;
+}
+
+.card select{
+width:100%;
+padding:12px 14px;
+border-radius:var(--radius-sm);
+border:1px solid var(--border);
+background:var(--surface);
+color:var(--text);
+font-family:inherit;
+font-size:0.95rem;
+transition:border-color 0.2s ease,box-shadow 0.2s ease;
+}
+.card select:focus{
+outline:none;
+border-color:var(--accent);
+box-shadow:0 0 0 3px var(--accent-dim);
+}
+
 .statusOverlay{
 position:fixed;
 inset:0;
@@ -323,6 +409,48 @@ radial-gradient(ellipse 60% 40% at 90% 110%,rgba(0,229,192,0.05),transparent);}
 
 </div>
 
+<!-- TAKE ITEM PAGE -->
+<div id="take" class="page">
+
+<div class="card">
+<h3>Take Item</h3>
+
+<label class="fieldLabel">Name</label>
+<input id="takeName" placeholder="Your full name">
+
+<label class="fieldLabel">Email ID</label>
+<input id="takeEmail" type="email" placeholder="name@example.com">
+
+<div class="takeGrid">
+<div>
+<label class="fieldLabel">Took date</label>
+<input id="takeDate" type="date">
+</div>
+<div>
+<label class="fieldLabel">Estimate return date</label>
+<input id="takeReturnDate" type="date">
+</div>
+</div>
+
+<label class="fieldLabel">Items</label>
+<div id="takeItemRows" class="itemRows"></div>
+<div class="rowActions">
+<button class="ghostBtn" type="button" onclick="addTakeRow()">+ Add item</button>
+<button class="ghostBtn" type="button" onclick="refreshAvailableItems(true)">↻ Refresh items</button>
+</div>
+<p class="helperText">You can add one or more items and set quantity for each.</p>
+
+<label class="fieldLabel">Phone number</label>
+<input id="takePhone" inputmode="tel" placeholder="+91 ...">
+
+<label class="fieldLabel">Purpose</label>
+<input id="takePurpose" placeholder="Reason for taking items">
+
+<button type="button" onclick="submitTakeForm()">Submit & Download PDF</button>
+</div>
+
+</div>
+
 
 <!-- VIEW PAGE -->
 <div id="view" class="page">
@@ -378,6 +506,7 @@ Made by Afkar — Curiosity Weekends<br>
 <div class="bottomNav">
 
 <button class="navBtn activeTab" data-page="home" onclick="showPage('home')">Home</button>
+<button class="navBtn" data-page="take" onclick="showPage('take');refreshAvailableItems()">Take</button>
 <button class="navBtn" data-page="view" onclick="loadItems()">View</button>
 <button class="navBtn" data-page="settings" onclick="showPage('settings')">Settings</button>
 
@@ -399,6 +528,7 @@ const url="https://script.google.com/macros/s/AKfycbwd_xE9NtNjLAjfYWZLjygRijPxFm
 
 let editRow=0
 let viewCache=null
+let availableItemsCache=null
 
 function showStatusLoading(title,message){
 const overlay=document.getElementById("statusOverlay")
@@ -450,6 +580,307 @@ btn.classList.remove("activeTab")
 }
 })
 
+}
+
+function setTodayIfEmpty(){
+const d=new Date()
+const iso=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)
+if(typeof takeDate!=="undefined"&&!takeDate.value)takeDate.value=iso
+}
+
+function createTakeRow(rowId,items){
+const wrap=document.createElement("div")
+wrap.className="itemRow"
+wrap.dataset.rowId=String(rowId)
+
+const select=document.createElement("select")
+select.className="takeItemSelect"
+items.forEach(name=>{
+const opt=document.createElement("option")
+opt.value=name
+opt.textContent=name
+select.appendChild(opt)
+})
+
+const qty=document.createElement("input")
+qty.className="takeQty"
+qty.type="number"
+qty.min="1"
+qty.placeholder="Qty"
+qty.value="1"
+
+const del=document.createElement("button")
+del.type="button"
+del.className="iconBtn"
+del.textContent="✕"
+del.onclick=()=>{ wrap.remove() }
+
+wrap.appendChild(select)
+wrap.appendChild(qty)
+wrap.appendChild(del)
+return wrap
+}
+
+function addTakeRow(){
+const rows=document.getElementById("takeItemRows")
+if(!rows)return
+const items=availableItemsCache&&availableItemsCache.length?availableItemsCache:["(No items)"]
+rows.appendChild(createTakeRow(Date.now(),items))
+}
+
+function refreshAvailableItems(force){
+if(!force&&availableItemsCache&&availableItemsCache.length){
+if(!document.querySelector("#takeItemRows .itemRow"))addTakeRow()
+setTodayIfEmpty()
+return
+}
+
+showStatusLoading("Loading items","Fetching available inventory…")
+fetch(url+"?action=get")
+.then(res=>{
+if(!res.ok)throw new Error("Request failed")
+return res.text()
+})
+.then(text=>{
+let data
+try{ data=JSON.parse(text) }catch(e){ data=[] }
+const names=(Array.isArray(data)?data:[])
+.map(r=>String(r&&r[0]?r[0]:"").trim())
+.filter(Boolean)
+availableItemsCache=[...new Set(names)].sort((a,b)=>a.localeCompare(b))
+
+const rows=document.getElementById("takeItemRows")
+if(rows){
+rows.innerHTML=""
+addTakeRow()
+}
+setTodayIfEmpty()
+hideStatus()
+})
+.catch(()=>{
+availableItemsCache=null
+hideStatus()
+const rows=document.getElementById("takeItemRows")
+if(rows&&rows.children.length===0)addTakeRow()
+})
+}
+
+function escapePdf(text){
+return String(text||"").replace(/\s+/g," ").trim()
+}
+
+function generateTakePdf(payload){
+const { jsPDF } = window.jspdf || {}
+if(!jsPDF)throw new Error("PDF engine not available")
+
+const doc=new jsPDF({unit:"mm",format:"a4"})
+const pageW=210
+const pageH=297
+const margin=14
+const left=margin
+const right=pageW-margin
+let y=14
+
+const now=new Date()
+const issueDate=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,10)
+const docNo=`CW-${issueDate.replaceAll("-","")}-${String(Math.floor(1000+Math.random()*9000))}`
+
+// Page border
+doc.setDrawColor(0)
+doc.setLineWidth(0.4)
+doc.rect(10,10,pageW-20,pageH-20)
+
+// Header block
+doc.setFillColor(245,245,245)
+doc.rect(10,10,pageW-20,30,"F")
+doc.setTextColor(0)
+doc.setFont("helvetica","bold")
+doc.setFontSize(15)
+doc.text("INVENTORY ISSUE / TAKING FORM",pageW/2,22,{align:"center"})
+doc.setFontSize(10)
+doc.setFont("helvetica","normal")
+doc.text("Curiosity Weekends",pageW/2,28,{align:"center"})
+
+// Doc meta
+y=46
+doc.setFont("helvetica","bold")
+doc.text("Document No:",left,y)
+doc.setFont("helvetica","normal")
+doc.text(docNo,left+30,y)
+doc.setFont("helvetica","bold")
+doc.text("Date:",140,y)
+doc.setFont("helvetica","normal")
+doc.text(issueDate,152,y)
+
+// Borrower details box
+y+=8
+doc.setLineWidth(0.3)
+doc.rect(left,y,right-left,42)
+doc.setFont("helvetica","bold")
+doc.setFontSize(11)
+doc.text("Borrower Details",left+3,y+7)
+doc.setFont("helvetica","normal")
+doc.setFontSize(10)
+
+const b1y=y+15
+doc.text(`Name: ${escapePdf(payload.name)}`,left+3,b1y)
+doc.text(`Phone: ${escapePdf(payload.phone)}`,left+110,b1y)
+doc.text(`Email: ${escapePdf(payload.email)}`,left+3,b1y+7)
+doc.text(`Took date: ${escapePdf(payload.tookDate)}`,left+110,b1y+7)
+doc.text(`Estimated return date: ${escapePdf(payload.returnDate)}`,left+110,b1y+14)
+const purposeLines=doc.splitTextToSize(`Purpose: ${escapePdf(payload.purpose)}`,right-left-6)
+doc.text(purposeLines,left+3,b1y+14)
+
+y+=52
+
+// Items table
+doc.setFont("helvetica","bold")
+doc.setFontSize(11)
+doc.text("Items Issued",left,y)
+y+=6
+
+const tableX=left
+const tableW=right-left
+const colSno=14
+const colQty=18
+const colItem=tableW-colSno-colQty
+const rowH=8
+
+doc.setFillColor(230,230,230)
+doc.rect(tableX,y,tableW,rowH,"F")
+doc.setDrawColor(0)
+doc.rect(tableX,y,tableW,rowH)
+doc.line(tableX+colSno,y,tableX+colSno,y+rowH)
+doc.line(tableX+colSno+colItem,y,tableX+colSno+colItem,y+rowH)
+doc.setFontSize(10)
+doc.text("S.No",tableX+2,y+5.5)
+doc.text("Item",tableX+colSno+2,y+5.5)
+doc.text("Qty",tableX+colSno+colItem+colQty-2,y+5.5,{align:"right"})
+doc.setFont("helvetica","normal")
+y+=rowH
+
+let index=1
+payload.items.forEach(it=>{
+const itemText=escapePdf(it.name)
+const itemLines=doc.splitTextToSize(itemText,colItem-4)
+const h=rowH*Math.max(1,itemLines.length)
+
+if(y+h>235){
+doc.addPage()
+doc.rect(10,10,pageW-20,pageH-20)
+doc.setFillColor(245,245,245)
+doc.rect(10,10,pageW-20,20,"F")
+doc.setFont("helvetica","bold")
+doc.setFontSize(12)
+doc.text("INVENTORY ISSUE / TAKING FORM (cont.)",pageW/2,22,{align:"center"})
+doc.setFont("helvetica","normal")
+doc.setFontSize(10)
+doc.text(`Document No: ${docNo}`,left,34)
+doc.text(`Date: ${issueDate}`,right,34,{align:"right"})
+doc.setFont("helvetica","bold")
+doc.setFontSize(11)
+doc.text("Items Issued",left,44)
+doc.setFont("helvetica","normal")
+doc.setFontSize(10)
+doc.setFillColor(230,230,230)
+y=48
+doc.rect(tableX,y,tableW,rowH,"F")
+doc.rect(tableX,y,tableW,rowH)
+doc.line(tableX+colSno,y,tableX+colSno,y+rowH)
+doc.line(tableX+colSno+colItem,y,tableX+colSno+colItem,y+rowH)
+doc.setFont("helvetica","bold")
+doc.text("S.No",tableX+2,y+5.5)
+doc.text("Item",tableX+colSno+2,y+5.5)
+doc.text("Qty",tableX+colSno+colItem+colQty-2,y+5.5,{align:"right"})
+doc.setFont("helvetica","normal")
+doc.setFontSize(10)
+y+=rowH
+}
+
+doc.rect(tableX,y,tableW,h)
+doc.line(tableX+colSno,y,tableX+colSno,y+h)
+doc.line(tableX+colSno+colItem,y,tableX+colSno+colItem,y+h)
+doc.text(String(index),tableX+2,y+5.5)
+doc.text(itemLines,tableX+colSno+2,y+5.5)
+doc.text(String(it.qty||""),tableX+colSno+colItem+colQty-2,y+5.5,{align:"right"})
+index+=1
+y+=h
+})
+
+// Signatures / seals section
+y+=10
+if(y>235){
+doc.addPage()
+doc.rect(10,10,pageW-20,pageH-20)
+y=18
+}
+
+doc.setFont("helvetica","bold")
+doc.setFontSize(11)
+doc.text("Acknowledgement & Authorization",left,y)
+doc.setFont("helvetica","normal")
+doc.setFontSize(9)
+doc.text("I acknowledge receiving the above items and agree to return them in good condition by the return date.",left,y+6)
+
+y+=20
+const boxH=28
+// Borrower signature
+doc.setFontSize(10)
+doc.setFont("helvetica","bold")
+doc.text("Borrower signature",left,y)
+doc.setDrawColor(0)
+doc.rect(left,y+3,80,boxH)
+
+// Office seal
+doc.text("Office seal",left+86,y)
+doc.rect(left+86,y+3,50,boxH)
+
+// Lab incharge signature
+doc.text("Lab incharge signature",left+140,y)
+doc.rect(left+140,y+3,56,boxH)
+
+const fname=`Take-Item-${(payload.name||"User").replace(/[^a-z0-9]+/gi,"-").replace(/(^-|-$)/g,"")||"Form"}-${payload.tookDate||""}.pdf`
+doc.save(fname)
+}
+
+function submitTakeForm(){
+const name=takeName.value.trim()
+const email=takeEmail.value.trim()
+const tookDate=takeDate.value
+const returnDate=takeReturnDate.value
+const phone=takePhone.value.trim()
+const purpose=takePurpose.value.trim()
+
+const rows=[...document.querySelectorAll("#takeItemRows .itemRow")]
+const items=rows.map(r=>{
+const sel=r.querySelector(".takeItemSelect")
+const qty=r.querySelector(".takeQty")
+return {name:sel?sel.value:"",qty:Number(qty?qty.value:0)}
+}).filter(x=>x.name&&x.name!=="(No items)"&&x.qty>0)
+
+if(!name||!email||!tookDate||!returnDate||!phone||!purpose||items.length===0){
+showStatusDone("Missing info","Please fill all fields and add at least one item.")
+return
+}
+
+showStatusLoading("Preparing PDF","Generating your form…")
+
+fetch(url,{
+method:"POST",
+body:JSON.stringify({
+action:"take",
+name,email,tookDate,returnDate,phone,purpose,items
+})
+}).catch(()=>{})
+.finally(()=>{
+try{
+generateTakePdf({name,email,tookDate,returnDate,phone,purpose,items})
+showStatusDone("Downloaded","PDF has been downloaded.")
+}catch(e){
+hideStatus()
+showStatusDone("PDF error","Could not generate PDF on this device.")
+}
+})
 }
 
 
