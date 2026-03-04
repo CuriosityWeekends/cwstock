@@ -2,111 +2,311 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
+<meta charset="utf-8">
 <title>Inventory App</title>
-
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+*{box-sizing:border-box;}
+:root{
+--bg:#0a0a0d;
+--surface:#12121a;
+--surface2:#1a1a24;
+--border:rgba(255,255,255,0.06);
+--text:#f0f0f5;
+--text2:#9898a6;
+--accent:#00e5c0;
+--accent-dim:rgba(0,229,192,0.2);
+--danger:#ff4757;
+--danger-dim:rgba(255,71,87,0.2);
+--warn:#ffb347;
+--warn-dim:rgba(255,179,71,0.2);
+--success:#00e676;
+--radius:16px;
+--radius-sm:12px;
+--shadow:0 20px 50px rgba(0,0,0,0.4);
+}
 
 body{
 margin:0;
-font-family:Arial;
-background:#f4f9ff;
+font-family:'Outfit',system-ui,sans-serif;
+background:var(--bg);
+color:var(--text);
+-webkit-font-smoothing:antialiased;
+min-height:100vh;
+background-image:
+radial-gradient(ellipse 120% 80% at 50% -20%,rgba(0,229,192,0.08),transparent),
+radial-gradient(ellipse 60% 50% at 80% 100%,rgba(0,229,192,0.04),transparent);
 }
 
 .header{
-background:#3bb3ff;
-color:white;
-padding:15px;
+position:fixed;
+top:0;left:0;right:0;
+z-index:20;
+background:linear-gradient(180deg,var(--surface) 0%,rgba(18,18,26,0.97) 100%);
+color:var(--text);
+padding:16px 20px;
 text-align:center;
-font-size:20px;
-font-weight:bold;
+font-size:1.15rem;
+font-weight:700;
+letter-spacing:-0.02em;
+border-bottom:1px solid var(--border);
+backdrop-filter:blur(12px);
 }
+.header span{color:var(--accent);}
 
 .page{
-padding:15px;
-padding-bottom:90px;
-display:none;
+position:absolute;
+inset:60px 0 118px;
+padding:20px 18px 28px;
+overflow-y:auto;
+opacity:0;
+transform:translateY(12px);
+pointer-events:none;
+transition:opacity 0.3s cubic-bezier(0.4,0,0.2,1),transform 0.3s cubic-bezier(0.4,0,0.2,1);
 }
-
-.active{
-display:block;
+.page.active{
+opacity:1;
+transform:translateY(0);
+pointer-events:auto;
 }
 
 .card{
-background:white;
-border-radius:12px;
-padding:15px;
-margin-bottom:12px;
-box-shadow:0 4px 10px rgba(0,0,0,0.08);
+background:var(--surface2);
+border-radius:var(--radius);
+padding:18px 20px;
+margin-bottom:14px;
+border:1px solid var(--border);
+box-shadow:var(--shadow);
+transition:transform 0.25s ease,border-color 0.25s ease,box-shadow 0.25s ease;
+}
+.card:hover{
+transform:translateY(-2px);
+border-color:rgba(0,229,192,0.15);
+box-shadow:0 24px 48px rgba(0,0,0,0.35);
+}
+
+.editingLabel{margin:4px 0 12px;font-size:0.9rem;color:var(--text2);}
+
+h3{
+margin:0 0 14px;
+font-size:1.05rem;
+font-weight:600;
+color:var(--text);
+letter-spacing:-0.01em;
 }
 
 input{
 width:100%;
-padding:12px;
+padding:12px 14px;
 margin-top:8px;
-border-radius:8px;
-border:1px solid #ccc;
+border-radius:var(--radius-sm);
+border:1px solid var(--border);
+background:var(--surface);
+color:var(--text);
+font-family:inherit;
+font-size:0.95rem;
+transition:border-color 0.2s ease,box-shadow 0.2s ease;
+}
+input::placeholder{color:var(--text2);}
+input:focus{
+outline:none;
+border-color:var(--accent);
+box-shadow:0 0 0 3px var(--accent-dim);
 }
 
 button{
-margin-top:10px;
-padding:10px;
+margin-top:14px;
+padding:12px 20px;
 border:none;
-border-radius:8px;
-background:#3bb3ff;
-color:white;
-font-size:15px;
+border-radius:var(--radius-sm);
+background:var(--accent);
+color:var(--bg);
+font-family:inherit;
+font-size:0.9rem;
+font-weight:600;
+letter-spacing:0.02em;
+cursor:pointer;
+transition:transform 0.2s ease,box-shadow 0.2s ease,opacity 0.2s ease;
 }
+button:hover{
+transform:translateY(-1px);
+box-shadow:0 8px 24px rgba(0,229,192,0.35);
+}
+button:active{transform:translateY(0);}
 
 .deleteBtn{
-background:#ff4d4d;
+background:var(--danger);
+color:#fff;
 }
+.deleteBtn:hover{box-shadow:0 8px 24px rgba(255,71,87,0.35);}
 
 .editBtn{
-background:#ffaa00;
+background:var(--warn);
+color:#1a1a24;
+margin-top:10px;
+padding:10px 16px;
+font-size:0.85rem;
 }
+.editBtn:hover{box-shadow:0 8px 24px rgba(255,179,71,0.35);}
 
 .bottomNav{
 position:fixed;
-bottom:0;
-width:100%;
-background:white;
+bottom:0;left:0;right:0;
+z-index:20;
+background:linear-gradient(0deg,var(--surface) 0%,rgba(18,18,26,0.98) 100%);
 display:flex;
-justify-content:space-around;
-padding:10px 0;
-box-shadow:0 -2px 10px rgba(0,0,0,0.1);
+justify-content:center;
+gap:8px;
+padding:12px 16px 20px;
+padding-bottom:max(20px,env(safe-area-inset-bottom));
+border-top:1px solid var(--border);
+backdrop-filter:blur(16px);
 }
-
 .navBtn{
-background:none;
+flex:1;
+max-width:120px;
+display:flex;
+align-items:center;
+justify-content:center;
+background:transparent;
 border:none;
-font-size:14px;
-color:#3bb3ff;
+font-family:inherit;
+font-size:0.8rem;
+font-weight:500;
+color:var(--text2);
+padding:10px 12px;
+border-radius:var(--radius-sm);
+cursor:pointer;
+transition:color 0.2s ease,background 0.2s ease,transform 0.2s ease;
 }
+.navBtn:hover{color:var(--text);background:var(--surface2);}
+.navBtn.activeTab{
+background:var(--accent-dim);
+color:var(--accent);
+font-weight:600;
+}
+.navBtn.activeTab:hover{color:var(--accent);}
+
+.appFooter{
+position:fixed;
+bottom:56px;
+left:0;right:0;
+z-index:19;
+padding:10px 16px 12px;
+text-align:center;
+font-size:0.75rem;
+color:var(--text2);
+border-top:1px solid var(--border);
+background:rgba(18,18,26,0.92);
+backdrop-filter:blur(8px);
+}
+.appFooter a{
+color:var(--accent);
+text-decoration:none;
+font-weight:500;
+transition:color 0.2s ease,opacity 0.2s ease;
+}
+.appFooter a:hover{color:var(--text);}
+.appFooter .sep{opacity:0.5;margin:0 6px;}
 
 .totalBox{
-background:#3bb3ff;
-color:white;
-padding:15px;
-border-radius:12px;
-margin-bottom:15px;
-font-size:18px;
+background:linear-gradient(135deg,var(--accent) 0%,#00b8a0 100%);
+color:var(--bg);
+padding:16px 20px;
+border-radius:var(--radius);
+margin-bottom:18px;
+font-size:1.05rem;
+font-weight:700;
 text-align:center;
+letter-spacing:-0.02em;
+box-shadow:0 12px 32px rgba(0,229,192,0.25);
+border:1px solid rgba(255,255,255,0.15);
 }
 
+.itemCard{
+border-left:3px solid var(--accent);
+padding-left:17px;
+}
+.itemCard .meta{color:var(--text2);font-size:0.88rem;margin:6px 0 10px;line-height:1.5;}
+.itemCard .name{font-weight:600;font-size:1rem;color:var(--text);}
+
+.statusOverlay{
+position:fixed;
+inset:0;
+display:none;
+align-items:center;
+justify-content:center;
+background:rgba(0,0,0,0.6);
+backdrop-filter:blur(8px);
+z-index:40;
+}
+.statusOverlay.visible{
+display:flex;
+animation:fadeIn 0.2s ease-out;
+}
+.statusPopup{
+width:260px;
+max-width:88%;
+background:var(--surface2);
+border:1px solid var(--border);
+border-radius:20px;
+padding:24px 20px;
+text-align:center;
+color:var(--text);
+box-shadow:0 24px 64px rgba(0,0,0,0.5);
+animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+.statusSpinner{
+width:40px;
+height:40px;
+margin:0 auto 14px;
+border-radius:50%;
+border:3px solid var(--border);
+border-top-color:var(--accent);
+animation:spin 0.7s linear infinite;
+}
+.statusCheck{
+display:none;
+font-size:2rem;
+margin-bottom:4px;
+color:var(--success);
+}
+.statusPopup.done .statusSpinner{display:none;}
+.statusPopup.done .statusCheck{display:block;}
+.statusTitle{font-size:1rem;font-weight:600;margin-bottom:4px;}
+.statusText{font-size:0.85rem;color:var(--text2);}
+
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes popIn{
+from{opacity:0;transform:scale(0.9) translateY(10px);}
+to{opacity:1;transform:scale(1) translateY(0);}
+}
+
+@media (min-width:768px){
+body{background-image:
+radial-gradient(ellipse 100% 60% at 50% -30%,rgba(0,229,192,0.1),transparent),
+radial-gradient(ellipse 60% 40% at 90% 110%,rgba(0,229,192,0.05),transparent);}
+.header{max-width:420px;left:50%;right:auto;margin:12px auto 0;transform:translateX(-50%);border-radius:var(--radius);border:1px solid var(--border);}
+.page{max-width:420px;margin:0 auto;inset:76px auto 134px;left:50%;transform:translateX(-50%);}
+.page.active{transform:translateX(-50%) translateY(0);}
+.appFooter{max-width:420px;left:50%;transform:translateX(-50%);border-radius:var(--radius) var(--radius) 0 0;}
+.bottomNav{max-width:420px;left:50%;transform:translateX(-50%);border-radius:var(--radius) var(--radius) 0 0;margin:0 auto;}
+}
 </style>
 </head>
 
 <body>
 
-<div class="header">Inventory System</div>
+<div class="header"><span>Inventory</span> System</div>
 
 
 <!-- HOME PAGE -->
 <div id="home" class="page active">
 
 <div class="card">
-
 <h3>Add New Item</h3>
 
 <input id="item" placeholder="Item Name">
@@ -138,16 +338,16 @@ text-align:center;
 <div id="edit" class="page">
 
 <div class="card">
-
 <h3>Edit Item</h3>
+<p id="editingLabel" class="editingLabel"></p>
 
-<input id="editItem">
-<input id="editQty" type="number">
-<input id="editLocker">
-<input id="editCost" type="number">
+<input id="editItem" placeholder="Item Name">
+<input id="editQty" type="number" placeholder="Quantity">
+<input id="editLocker" placeholder="Locker Number">
+<input id="editCost" type="number" placeholder="Cost per piece">
 
-<button onclick="updateItem()">Update</button>
-<button class="deleteBtn" onclick="deleteItem()">Delete</button>
+<button onclick="updateItem()">Save Changes</button>
+<button class="deleteBtn" onclick="deleteItem()">Delete Item</button>
 
 </div>
 
@@ -158,7 +358,6 @@ text-align:center;
 <div id="settings" class="page">
 
 <div class="card">
-
 <h3>Settings</h3>
 
 <button class="deleteBtn" onclick="deleteAll()">Delete All Data</button>
@@ -169,23 +368,71 @@ text-align:center;
 
 
 
+<!-- FOOTER CREDIT -->
+<footer class="appFooter">
+Made by Afkar — Curiosity Weekends<br>
+<a href="https://afkar.curiosityweekends.org" target="_blank" rel="noopener">afkar.curiosityweekends.org</a><span class="sep">·</span><a href="https://curiosityweekends.org" target="_blank" rel="noopener">curiosityweekends.org</a>
+</footer>
+
 <!-- BOTTOM NAV -->
 <div class="bottomNav">
 
-<button class="navBtn" onclick="showPage('home')">Home</button>
-<button class="navBtn" onclick="loadItems()">View</button>
-<button class="navBtn" onclick="showPage('edit')">Edit</button>
-<button class="navBtn" onclick="showPage('settings')">Settings</button>
+<button class="navBtn activeTab" data-page="home" onclick="showPage('home')">Home</button>
+<button class="navBtn" data-page="view" onclick="loadItems()">View</button>
+<button class="navBtn" data-page="settings" onclick="showPage('settings')">Settings</button>
 
 </div>
 
-
+<!-- STATUS POPUP -->
+<div id="statusOverlay" class="statusOverlay">
+<div id="statusPopup" class="statusPopup">
+<div class="statusSpinner"></div>
+<div class="statusCheck">✓</div>
+<div class="statusTitle" id="statusTitle">Please wait</div>
+<div class="statusText" id="statusText">Processing your request…</div>
+</div>
+</div>
 
 <script>
 
 const url="https://script.google.com/macros/s/AKfycbwd_xE9NtNjLAjfYWZLjygRijPxFm090e2zYNNlkvJk8X-m-NbKu5AbREWR-sdJr0YQTw/exec"
 
 let editRow=0
+let viewCache=null
+
+function showStatusLoading(title,message){
+const overlay=document.getElementById("statusOverlay")
+const popup=document.getElementById("statusPopup")
+const titleEl=document.getElementById("statusTitle")
+const textEl=document.getElementById("statusText")
+if(!overlay||!popup||!titleEl||!textEl)return
+popup.classList.remove("done")
+titleEl.textContent=title||"Please wait"
+textEl.textContent=message||"Processing your request…"
+overlay.classList.add("visible")
+}
+
+function showStatusDone(finalTitle,finalMessage){
+const overlay=document.getElementById("statusOverlay")
+const popup=document.getElementById("statusPopup")
+const titleEl=document.getElementById("statusTitle")
+const textEl=document.getElementById("statusText")
+if(!overlay||!popup||!titleEl||!textEl)return
+popup.classList.add("done")
+if(finalTitle)titleEl.textContent=finalTitle
+if(finalMessage)textEl.textContent=finalMessage
+setTimeout(()=>{
+overlay.classList.remove("visible")
+popup.classList.remove("done")
+},900)
+}
+
+function hideStatus(){
+const overlay=document.getElementById("statusOverlay")
+const popup=document.getElementById("statusPopup")
+if(overlay)overlay.classList.remove("visible")
+if(popup)popup.classList.remove("done")
+}
 
 function showPage(page){
 
@@ -195,11 +442,21 @@ p.classList.remove("active")
 
 document.getElementById(page).classList.add("active")
 
+document.querySelectorAll(".navBtn").forEach(btn=>{
+if(btn.dataset.page===page){
+btn.classList.add("activeTab")
+}else{
+btn.classList.remove("activeTab")
+}
+})
+
 }
 
 
 
 function addItem(){
+
+showStatusLoading("Adding item","Saving this item to inventory…")
 
 fetch(url,{
 method:"POST",
@@ -214,26 +471,31 @@ cost:Number(cost.value)
 
 .then(res=>res.text())
 .then(()=>{
-
-alert("Item Added")
-
 item.value=""
 qty.value=""
 locker.value=""
 cost.value=""
 
+viewCache=null
+showStatusDone("Item added","Your item has been added successfully.")
 })
 
 }
 
 
 
-function loadItems(){
+function loadItems(forceRefresh){
 
 showPage("view")
+if(!forceRefresh&&viewCache){
+itemList.innerHTML=viewCache.html
+totalCost.innerHTML=viewCache.total
+return
+}
+
+showStatusLoading("Loading inventory","Fetching your items…")
 
 fetch(url+"?action=get")
-
 .then(res=>res.json())
 .then(data=>{
 
@@ -245,33 +507,28 @@ data.forEach((r,i)=>{
 let row=i+2
 total+=Number(r[4])
 
+const safeName=r[0].replace(/'/g,"\\'").replace(/"/g,'&quot;')
 html+=`
-
-<div class="card">
-
-<b>${r[0]}</b><br><br>
-
-Quantity : ${r[1]}<br>
-Locker : ${r[2]}<br>
-Cost : ₹${r[3]}<br>
-Total : ₹${r[4]}<br><br>
-
-<button class="editBtn"
-onclick="editItemPage(${row},'${r[0]}',${r[1]},'${r[2]}',${r[3]})">
-
-Edit
-
-</button>
-
+<div class="card itemCard">
+<div class="name">${r[0]}</div>
+<div class="meta">Qty ${r[1]} · Locker ${r[2]} · ₹${r[3]} each → Total ₹${r[4]}</div>
+<button class="editBtn" onclick="editItemPage(${row},'${safeName}',${r[1]},'${r[2]}',${r[3]})">Edit</button>
 </div>
-
 `
 
 })
 
 itemList.innerHTML=html
 totalCost.innerHTML="Total Value : ₹"+total
+viewCache={html:html,total:"Total Value : ₹"+total}
+hideStatus()
 
+})
+.catch(()=>{
+viewCache=null
+hideStatus()
+itemList.innerHTML='<div class="card"><p style="text-align:center;margin:0;color:var(--text2);">Could not load inventory.</p><p style="text-align:center;margin:6px 0 0;font-size:0.85rem;color:var(--text2);">Check your connection and try again.</p></div>'
+totalCost.innerHTML="Total Value : ₹0"
 })
 
 }
@@ -289,11 +546,15 @@ editQty.value=qty
 editLocker.value=locker
 editCost.value=cost
 
+editingLabel.textContent="Editing "+item
+
 }
 
 
 
 function updateItem(){
+
+showStatusLoading("Updating item","Saving your changes…")
 
 fetch(url,{
 method:"POST",
@@ -308,9 +569,9 @@ cost:Number(editCost.value)
 })
 .then(()=>{
 
-alert("Updated")
-loadItems()
+loadItems(true)
 
+showStatusDone("Item updated","Changes have been saved.")
 })
 
 }
@@ -319,12 +580,14 @@ loadItems()
 
 function deleteItem(){
 
+showStatusLoading("Deleting item","Removing this item…")
+
 fetch(url+"?action=delete&row="+editRow)
 .then(()=>{
 
-alert("Deleted")
-loadItems()
+loadItems(true)
 
+showStatusDone("Item deleted","The item has been removed.")
 })
 
 }
@@ -335,10 +598,12 @@ function deleteAll(){
 
 if(confirm("Delete all data?")){
 
+showStatusLoading("Clearing items","Deleting all inventory data…")
+
 fetch(url+"?action=deleteAll")
 .then(()=>{
 
-alert("All data deleted")
+showStatusDone("Reset complete","All items have been deleted.")
 
 })
 
