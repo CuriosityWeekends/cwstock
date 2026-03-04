@@ -1,553 +1,352 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>CW Stock System | Inventory Management</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Inventory App</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#f4f9ff;
+}
+
+.header{
+background:#3bb3ff;
+color:white;
+padding:15px;
+text-align:center;
+font-size:20px;
+font-weight:bold;
+}
+
+.page{
+padding:15px;
+padding-bottom:90px;
+display:none;
+}
+
+.active{
+display:block;
+}
+
+.card{
+background:white;
+border-radius:12px;
+padding:15px;
+margin-bottom:12px;
+box-shadow:0 4px 10px rgba(0,0,0,0.08);
+}
+
+input{
+width:100%;
+padding:12px;
+margin-top:8px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+button{
+margin-top:10px;
+padding:10px;
+border:none;
+border-radius:8px;
+background:#3bb3ff;
+color:white;
+font-size:15px;
+}
+
+.deleteBtn{
+background:#ff4d4d;
+}
+
+.editBtn{
+background:#ffaa00;
+}
+
+.bottomNav{
+position:fixed;
+bottom:0;
+width:100%;
+background:white;
+display:flex;
+justify-content:space-around;
+padding:10px 0;
+box-shadow:0 -2px 10px rgba(0,0,0,0.1);
+}
+
+.navBtn{
+background:none;
+border:none;
+font-size:14px;
+color:#3bb3ff;
+}
+
+.totalBox{
+background:#3bb3ff;
+color:white;
+padding:15px;
+border-radius:12px;
+margin-bottom:15px;
+font-size:18px;
+text-align:center;
+}
+
+</style>
 </head>
 
 <body>
 
-  <div class="container animate-fade">
-
-    <!-- HEADER -->
-    <header>
-      <div>
-        <h1>Curiosity<span>Weekends</span></h1>
-        <div class="subtitle">Inventory System</div>
-      </div>
-      <div style="text-align: right">
-        <div style="font-weight: 600; font-size: 14px;">Public Portal</div>
-        <div id="date-display" style="font-size: 12px; color: var(--muted)"></div>
-      </div>
-    </header>
-
-
-    <!-- ISSUE -->
-    <div class="card">
-      <h2>📦 Issue Items</h2>
-
-      <div class="form-grid">
-        <div class="input-group">
-          <label>Full Name</label>
-          <input id="userName" placeholder="Enter your name" oninput="makePreview()">
-        </div>
-        <div class="input-group">
-          <label>Class/Dept</label>
-          <input id="cls" placeholder="e.g. CS-A" oninput="makePreview()">
-        </div>
-        <div class="input-group">
-          <label>Phone Number</label>
-          <input id="phone" placeholder="+1..." oninput="makePreview()">
-        </div>
-        <div class="input-group">
-          <label>Email Address</label>
-          <input id="email" type="email" placeholder="email@example.com" oninput="makePreview()">
-        </div>
-        <div class="input-group">
-          <label>Return Date</label>
-          <input id="ret" type="date" oninput="makePreview()">
-        </div>
-      </div>
-
-      <h3 style="margin: 32px 0 16px; font-size: 18px;">Available Items</h3>
-
-      <div class="controls-row">
-        <div class="search-wrapper">
-          <span class="search-icon">🔍</span>
-          <input type="text" id="searchInput" placeholder="Search for equipment, microcontrollers, sensors..."
-            oninput="filterProducts()">
-        </div>
-        <div id="categoryChips" class="chips">
-          <button class="chip active" onclick="setCategory('All', this)">All</button>
-        </div>
-      </div>
-
-      <div id="products" class="products-list">
-        <!-- Skeleton Loaders -->
-        <div class="product-item skeleton" style="height: 140px"></div>
-        <div class="product-item skeleton" style="height: 140px"></div>
-        <div class="product-item skeleton" style="height: 140px"></div>
-      </div>
-
-      <div class="cart-box" id="cart-container">
-        <h4 style="font-size: 14px; margin-bottom: 12px; color: var(--muted)">Current Selection</h4>
-        <div id="cart">No items selected</div>
-      </div>
-
-      <h3 style="margin: 32px 0 16px; font-size: 18px;">Project Context</h3>
-      <div class="form-grid">
-        <div class="input-group">
-          <label>Purpose</label>
-          <input id="purpose" placeholder="Why are you borrowing?" oninput="makePreview()">
-        </div>
-        <div class="input-group">
-          <label>Group Members</label>
-          <input id="members" placeholder="Comma separated names" oninput="makePreview()">
-        </div>
-        <div class="input-group">
-          <label>GitHub Repository</label>
-          <input id="git" placeholder="https://github.com/..." oninput="makePreview()">
-        </div>
-      </div>
-
-      <h3 style="margin: 32px 0 16px; font-size: 18px;">Verification Preview</h3>
-      <div class="preview-box" id="preview">
-        <div style="text-align: center; color: var(--muted); padding: 10px;">Fill out the form to see preview</div>
-      </div>
-
-      <div style="margin-top: 32px; text-align: center">
-        <button class="btn btn-primary" onclick="submitData()" style="width: 100%; max-width: 300px;">
-          Confirm & Download Receipt
-        </button>
-      </div>
-    </div>
-
-
-    <!-- RETURN -->
-    <div class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-        <h2 style="margin:0">🔁 Active Issues</h2>
-        <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="loadReturns()">🔄
-          Refresh</button>
-      </div>
-      <div id="returnList" class="products-list">Loading pending returns...</div>
-    </div>
-
-
-    <!-- STATUS MODAL / TOAST -->
-    <div id="statusToast"
-      style="display:none; position: fixed; bottom: 24px; right: 24px; padding: 16px 24px; background: var(--primary); color: white; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); z-index: 100; transition: var(--transition)">
-      <span id="statusText">⏳ Processing...</span>
-    </div>
-
-    <!-- QUANTITY MODAL -->
-    <div id="quantityModal" class="modal-overlay">
-      <div class="modal-card animate-fade">
-        <h2 id="modalTitle">Select Quantity</h2>
-        <div class="input-group">
-          <label id="modalLabel">Quantity (Max: 0)</label>
-          <input type="number" id="modalQty" min="1" value="1">
-        </div>
-        <div class="modal-actions">
-          <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
-          <button class="btn btn-primary" onclick="confirmQty()">Add to Selection</button>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-
-  <script>
-    const API = "https://script.google.com/macros/s/AKfycbwd_xE9NtNjLAjfYWZLjygRijPxFm090e2zYNNlkvJk8X-m-NbKu5AbREWR-sdJr0YQTw/exec";
-    let cart = [];
-    let allProducts = [];
-    let currentCategory = 'All';
-
-    // Current Date display
-    document.getElementById('date-display').innerText = new Date().toLocaleDateString('en-US', {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-    });
-
-    // Load persisted user data
-    function loadUserData() {
-      const fields = ['userName', 'cls', 'phone', 'email'];
-      fields.forEach(f => {
-        const val = localStorage.getItem('cw_' + f);
-        if (val) {
-          document.getElementById(f).value = val;
-        }
-        document.getElementById(f).addEventListener('input', (e) => {
-          localStorage.setItem('cw_' + f, e.target.value);
-        });
-      });
-    }
-
-    /* LOAD PRODUCTS */
-    async function loadProducts() {
-      try {
-        const r = await fetch(API + "?action=getProducts&_v=" + Date.now());
-        allProducts = await r.json();
-
-        // Generate Category Chips
-        const categories = ['All', ...new Set(allProducts.map(p => p[2]))];
-        const chipsBox = document.getElementById("categoryChips");
-        chipsBox.innerHTML = '';
-        categories.forEach(cat => {
-          const btn = document.createElement('button');
-          btn.className = `chip ${cat === currentCategory ? 'active' : ''}`;
-          btn.innerText = cat;
-          btn.onclick = () => setCategory(cat, btn);
-          chipsBox.appendChild(btn);
-        });
-
-        renderProducts(allProducts);
-      } catch (e) {
-        console.error(e);
-        document.getElementById("products").innerText = "Error loading inventory.";
-      }
-    }
-
-    function renderProducts(products) {
-      const box = document.getElementById("products");
-      box.innerHTML = "";
-
-      if (products.length === 0) {
-        box.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--muted)">No items found matching your search.</div>';
-        return;
-      }
-
-      products.forEach(p => {
-        const item = document.createElement("div");
-        item.className = "product-item animate-fade";
-        item.innerHTML = `
-              <div class="product-details">
-                  <div class="product-info">
-                      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
-                        <span style="font-size: 11px; text-transform: uppercase; color: var(--primary); font-weight: 700;">${p[2]}</span>
-                        ${p[3] < 3 ? '<span class="badge badge-low">Low Stock</span>' : ''}
-                      </div>
-                      <h3>${p[1]}</h3>
-                      <p>Currently <span style="font-size: 13px; font-weight: 600; color: ${p[3] > 0 ? 'var(--success)' : 'var(--danger)'}">${p[3]} available</span></p>
-                  </div>
-                  <button class="btn btn-primary" style="width: 100%; font-size: 13px;" onclick="addItem('${p[1]}', ${p[3]})" ${p[3] <= 0 ? 'disabled' : ''}>
-                      ${p[3] > 0 ? 'Add to Selection' : 'Out of Stock'}
-                  </button>
-              </div>
-          `;
-        box.appendChild(item);
-      });
-    }
-
-    /* FILTER LOGIC */
-    function filterProducts() {
-      const term = document.getElementById('searchInput').value.toLowerCase();
-      const filtered = allProducts.filter(p => {
-        const matchesSearch = p[1].toLowerCase().includes(term) || p[2].toLowerCase().includes(term);
-        const matchesCat = currentCategory === 'All' || p[2] === currentCategory;
-        return matchesSearch && matchesCat;
-      });
-      renderProducts(filtered);
-    }
-
-    function setCategory(cat, btn) {
-      currentCategory = cat;
-      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-      btn.classList.add('active');
-      filterProducts();
-    }
-
-    /* CART ACTIONS */
-    let currentItemForModal = null;
-
-    function addItem(name, maxStock) {
-      currentItemForModal = { name, maxStock };
-      document.getElementById("modalTitle").innerText = `Quantity for ${name}`;
-      document.getElementById("modalLabel").innerText = `Quantity (Max: ${maxStock})`;
-
-      const qtyInput = document.getElementById("modalQty");
-      qtyInput.max = maxStock;
-      qtyInput.value = 1;
-
-      document.getElementById("quantityModal").style.display = "flex";
-      qtyInput.focus();
-    }
-
-    function closeModal() {
-      document.getElementById("quantityModal").style.display = "none";
-      currentItemForModal = null;
-    }
-
-    function confirmQty() {
-      const q = document.getElementById("modalQty").value;
-      const { name, maxStock } = currentItemForModal;
-
-      if (!q || q <= 0) return alert("Please enter a valid quantity");
-      if (parseInt(q) > maxStock) {
-        alert("Quantity exceeds available stock!");
-        return;
-      }
-
-      const existing = cart.find(i => i.name === name);
-      if (existing) {
-        existing.qty = parseInt(q);
-      } else {
-        cart.push({ name, qty: parseInt(q) });
-      }
-
-      renderCart();
-      closeModal();
-    }
-
-    function removeCartItem(index) {
-      cart.splice(index, 1);
-      renderCart();
-    }
-
-    function renderCart() {
-      const box = document.getElementById("cart");
-      if (!cart.length) {
-        box.innerHTML = '<div style="color: var(--muted); font-size: 13px;">No items selected</div>';
-        makePreview();
-        return;
-      }
-
-      let h = '<div style="display: grid; gap: 8px;">';
-      cart.forEach((i, idx) => {
-        h += `
-                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px;">
-                    <span style="font-size: 14px;">${i.name} <b style="color: var(--primary)">x${i.qty}</b></span>
-                    <button class="btn btn-danger" style="padding: 4px 8px; font-size: 10px;" onclick="removeCartItem(${idx})">Remove</button>
-                </div>
-            `;
-      });
-      h += '</div>';
-      box.innerHTML = h;
-      makePreview();
-    }
-
-    /* PREVIEW GENERATION */
-    function makePreview() {
-      const n = document.getElementById("userName").value || "---";
-      const c = document.getElementById("cls").value || "---";
-      const ph = document.getElementById("phone").value || "---";
-      const em = document.getElementById("email").value || "---";
-      const pu = document.getElementById("purpose").value || "---";
-      const me = document.getElementById("members").value || "---";
-      const gi = document.getElementById("git").value || "---";
-      const re = document.getElementById("ret").value || "---";
-
-      let items = "";
-      cart.forEach(i => {
-        items += `<li>${i.name} x${i.qty}</li>`;
-      });
-
-      document.getElementById("preview").innerHTML = `
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div>
-                    <div style="font-size: 11px; text-transform: uppercase; color: var(--muted)">Issuer</div>
-                    <div style="font-weight: 500">${n}</div>
-                </div>
-                <div>
-                    <div style="font-size: 11px; text-transform: uppercase; color: var(--muted)">Class</div>
-                    <div style="font-weight: 500">${c}</div>
-                </div>
-                <div>
-                    <div style="font-size: 11px; text-transform: uppercase; color: var(--muted)">Contact</div>
-                    <div style="font-weight: 500">${ph}</div>
-                </div>
-                <div>
-                    <div style="font-size: 11px; text-transform: uppercase; color: var(--muted)">Expected Return</div>
-                    <div style="font-weight: 500; color: var(--primary)">${re}</div>
-                </div>
-            </div>
-            
-            <hr class="preview-divider">
-            
-            <div style="font-size: 11px; text-transform: uppercase; color: var(--muted); margin-bottom: 5px;">Inventory Items</div>
-            <ul style="margin-left: 18px; font-weight: 500;">
-                ${items || '<li style="color: var(--danger)">No items selected</li>'}
-            </ul>
-            
-            <hr class="preview-divider">
-            
-            <div style="font-size: 11px; text-transform: uppercase; color: var(--muted); margin-bottom: 5px;">Project Purpose</div>
-            <div style="font-weight: 400; font-style: italic;">"${pu}"</div>
-        `;
-    }
-
-    /* SUBMISSION logic */
-    function showToast(text, duration = 3000) {
-      const t = document.getElementById("statusToast");
-      const txt = document.getElementById("statusText");
-      t.style.display = "block";
-      txt.innerHTML = text;
-
-      if (duration) {
-        setTimeout(() => {
-          t.style.display = "none";
-        }, duration);
-      }
-    }
-
-    function submitData() {
-      if (!cart.length) {
-        alert("Please select at least one item.");
-        return;
-      }
-      if (!document.getElementById("userName").value) {
-        alert("Please enter your name.");
-        return;
-      }
-
-      showToast("⏳ Submitting registration...", 0);
-
-      const data = {
-        name: document.getElementById("userName").value,
-        class: document.getElementById("cls").value,
-        phone: document.getElementById("phone").value,
-        email: document.getElementById("email").value,
-        purpose: document.getElementById("purpose").value,
-        members: document.getElementById("members").value,
-        github: document.getElementById("git").value,
-        returnDate: document.getElementById("ret").value,
-        cart: cart
-      };
-
-      fetch(API, {
-        method: "POST",
-        mode: "no-cors",
-        body: JSON.stringify(data)
-      });
-
-      setTimeout(() => {
-        showToast("✔ Submission Successful!");
-        makePDF(data);
-
-        // Reset cart only, keep user info synced to localStorage
-        cart = [];
-        renderCart();
-        loadReturns();
-      }, 1500);
-    }
-
-    function makePDF(d) {
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF();
-
-      // Premium PDF design basics
-      pdf.setFillColor(15, 23, 42); // bg color
-      pdf.rect(0, 0, 210, 40, 'F');
-
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(22);
-      pdf.text("CuriosityWeekends", 20, 20);
-      pdf.setFontSize(10);
-      pdf.text("OFFICIAL INVENTORY RECEIPT", 20, 28);
-
-      pdf.setTextColor(0, 0, 0);
-      pdf.setFontSize(12);
-      pdf.text("Issued To: " + d.name, 20, 55);
-      pdf.text("Class: " + d.class, 20, 62);
-      pdf.text("Date: " + new Date().toLocaleDateString(), 150, 55);
-
-      pdf.setDrawColor(200, 200, 200);
-      pdf.line(20, 70, 190, 70);
-
-      pdf.setFontSize(14);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("ITEMS BORROWED", 20, 80);
-
-      pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(11);
-      let y = 90;
-      d.cart.forEach(i => {
-        pdf.text(`• ${i.name}`, 25, y);
-        pdf.text(`Qty: ${i.qty}`, 150, y);
-        y += 8;
-      });
-
-      pdf.line(20, y + 10, 190, y + 10);
-      pdf.text("Expected Return: " + d.returnDate, 20, y + 20);
-
-      pdf.save(`CW_Receipt_${d.name.replace(/\s+/g, '_')}.pdf`);
-    }
-
-    /* RETURNS HANDLING */
-    async function loadReturns() {
-      try {
-        const r = await fetch(API + "?action=getIssued&_v=" + Date.now());
-        const data = await r.json();
-        const box = document.getElementById("returnList");
-        box.innerHTML = "";
-
-        // Map original row indices so we target the correct spreadsheet row even after filtering
-        const processedData = data.map((r, i) => ({ originalRow: i + 2, data: r }));
-
-        const activeReturns = processedData.filter(item => {
-          const row = item.data;
-          if (!row || row.length < 2) return false;
-          return !row.some(cell => String(cell).toLowerCase().includes('returned'));
-        });
-
-        if (!activeReturns.length) {
-          box.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--success); font-weight: 500;">✅ No pending returns</div>';
-          return;
-        }
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        activeReturns.forEach((item) => {
-          const r = item.data;
-          const rowIdx = item.originalRow;
-
-          const returnDate = new Date(r[9]);
-          const isOverdue = returnDate < today;
-
-          const itemEl = document.createElement("div");
-          itemEl.className = "product-item animate-fade";
-          itemEl.innerHTML = `
-                <div class="product-details">
-                    <div class="product-info">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
-                           <span style="font-size: 11px; text-transform: uppercase; color: var(--muted);">${r[5]}</span>
-                           ${isOverdue ? '<span class="badge badge-overdue">Overdue</span>' : ''}
-                        </div>
-                        <h3>${r[1]}</h3>
-                        <p>Borrowed by: <b>${r[1]}</b> • Due: <span class="${isOverdue ? 'overdue-text' : ''}" style="color: var(--primary)">${r[9]}</span></p>
-                    </div>
-                    <button class="btn btn-success" style="width: 100%; font-size: 13px;" onclick="returnItem(${rowIdx})">
-                        Confirm Return
-                    </button>
-                </div>
-            `;
-          box.appendChild(itemEl);
-        });
-      } catch (e) {
-        console.error(e);
-        document.getElementById("returnList").innerText = "Error loading returns.";
-      }
-    }
-
-    async function returnItem(row) {
-      if (!confirm("Confirm that this item has been returned in good condition?")) return;
-
-      showToast("⏳ Registering return...", 0);
-
-      try {
-        await fetch(API, {
-          method: "POST",
-          mode: "no-cors",
-          body: JSON.stringify({
-            action: "returnItem",
-            row: row
-          })
-        });
-
-        // Google Apps Script is slow. Wait 3 seconds before refreshing to ensure 
-        // the spreadsheet has updated and the cache is likely cleared.
-        setTimeout(() => {
-          showToast("✔ Item successfully returned!");
-          loadReturns();
-          loadProducts();
-        }, 3000);
-
-      } catch (e) {
-        showToast("❌ Error processing return");
-      }
-    }
-
-    // Initialize
-    loadUserData();
-    loadProducts();
-    loadReturns();
-  </script>
+<div class="header">Inventory System</div>
+
+
+<!-- HOME PAGE -->
+<div id="home" class="page active">
+
+<div class="card">
+
+<h3>Add New Item</h3>
+
+<input id="item" placeholder="Item Name">
+
+<input id="qty" type="number" placeholder="Quantity">
+
+<input id="locker" placeholder="Locker Number">
+
+<input id="cost" type="number" placeholder="Cost per piece">
+
+<button onclick="addItem()">Add Item</button>
+
+</div>
+
+</div>
+
+
+<!-- VIEW PAGE -->
+<div id="view" class="page">
+
+<div class="totalBox" id="totalCost">Total Value : ₹0</div>
+
+<div id="itemList"></div>
+
+</div>
+
+
+<!-- EDIT PAGE -->
+<div id="edit" class="page">
+
+<div class="card">
+
+<h3>Edit Item</h3>
+
+<input id="editItem">
+<input id="editQty" type="number">
+<input id="editLocker">
+<input id="editCost" type="number">
+
+<button onclick="updateItem()">Update</button>
+<button class="deleteBtn" onclick="deleteItem()">Delete</button>
+
+</div>
+
+</div>
+
+
+<!-- SETTINGS PAGE -->
+<div id="settings" class="page">
+
+<div class="card">
+
+<h3>Settings</h3>
+
+<button class="deleteBtn" onclick="deleteAll()">Delete All Data</button>
+
+</div>
+
+</div>
+
+
+
+<!-- BOTTOM NAV -->
+<div class="bottomNav">
+
+<button class="navBtn" onclick="showPage('home')">Home</button>
+<button class="navBtn" onclick="loadItems()">View</button>
+<button class="navBtn" onclick="showPage('edit')">Edit</button>
+<button class="navBtn" onclick="showPage('settings')">Settings</button>
+
+</div>
+
+
+
+<script>
+
+const url="https://script.google.com/macros/s/AKfycbwd_xE9NtNjLAjfYWZLjygRijPxFm090e2zYNNlkvJk8X-m-NbKu5AbREWR-sdJr0YQTw/exec"
+
+let editRow=0
+
+function showPage(page){
+
+document.querySelectorAll(".page").forEach(p=>{
+p.classList.remove("active")
+})
+
+document.getElementById(page).classList.add("active")
+
+}
+
+
+
+function addItem(){
+
+fetch(url,{
+method:"POST",
+body:JSON.stringify({
+action:"add",
+item:item.value,
+qty:Number(qty.value),
+locker:locker.value,
+cost:Number(cost.value)
+})
+})
+
+.then(res=>res.text())
+.then(()=>{
+
+alert("Item Added")
+
+item.value=""
+qty.value=""
+locker.value=""
+cost.value=""
+
+})
+
+}
+
+
+
+function loadItems(){
+
+showPage("view")
+
+fetch(url+"?action=get")
+
+.then(res=>res.json())
+.then(data=>{
+
+let html=""
+let total=0
+
+data.forEach((r,i)=>{
+
+let row=i+2
+total+=Number(r[4])
+
+html+=`
+
+<div class="card">
+
+<b>${r[0]}</b><br><br>
+
+Quantity : ${r[1]}<br>
+Locker : ${r[2]}<br>
+Cost : ₹${r[3]}<br>
+Total : ₹${r[4]}<br><br>
+
+<button class="editBtn"
+onclick="editItemPage(${row},'${r[0]}',${r[1]},'${r[2]}',${r[3]})">
+
+Edit
+
+</button>
+
+</div>
+
+`
+
+})
+
+itemList.innerHTML=html
+totalCost.innerHTML="Total Value : ₹"+total
+
+})
+
+}
+
+
+
+function editItemPage(row,item,qty,locker,cost){
+
+showPage("edit")
+
+editRow=row
+
+editItem.value=item
+editQty.value=qty
+editLocker.value=locker
+editCost.value=cost
+
+}
+
+
+
+function updateItem(){
+
+fetch(url,{
+method:"POST",
+body:JSON.stringify({
+action:"update",
+row:editRow,
+item:editItem.value,
+qty:Number(editQty.value),
+locker:editLocker.value,
+cost:Number(editCost.value)
+})
+})
+.then(()=>{
+
+alert("Updated")
+loadItems()
+
+})
+
+}
+
+
+
+function deleteItem(){
+
+fetch(url+"?action=delete&row="+editRow)
+.then(()=>{
+
+alert("Deleted")
+loadItems()
+
+})
+
+}
+
+
+
+function deleteAll(){
+
+if(confirm("Delete all data?")){
+
+fetch(url+"?action=deleteAll")
+.then(()=>{
+
+alert("All data deleted")
+
+})
+
+}
+
+}
+
+</script>
 
 </body>
-
 </html>
