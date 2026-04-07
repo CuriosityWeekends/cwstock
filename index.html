@@ -490,16 +490,20 @@ radial-gradient(ellipse 60% 40% at 90% 110%,rgba(0,229,192,0.05),transparent);}
 </div>
 
 
-<!-- SETTINGS PAGE -->
-<div id="settings" class="page">
+<!-- REPORTS PAGE -->
+<div id="reports" class="page">
+  <div class="card">
+    <h3>Reports Dashboard</h3>
 
-<div class="card">
-<h3>Settings</h3>
+    <div class="rowActions">
+      <button class="ghostBtn" onclick="showSummary()">📊 Summary</button>
+      <button class="ghostBtn" onclick="showLowStock()">⚠️ Low Stock</button>
+      <button class="ghostBtn" onclick="showBorrowers()">👥 Borrowers</button>
+      <button class="ghostBtn" onclick="showReturned()">✅ Returned</button>
+    </div>
 
-<button class="deleteBtn" onclick="deleteAll()">Delete All Data</button>
-
-</div>
-
+    <div id="reportContent" style="margin-top:15px;"></div>
+  </div>
 </div>
 
 
@@ -516,7 +520,7 @@ Made by Afkar — Curiosity Weekends<br>
 <button class="navBtn activeTab" data-page="home" onclick="showPage('home')">Home</button>
 <button class="navBtn" data-page="take" onclick="showPage('take');refreshAvailableItems()">Take</button>
 <button class="navBtn" data-page="view" onclick="loadItems()">View</button>
-<button class="navBtn" data-page="settings" onclick="showPage('settings')">Settings</button>
+<button class="navBtn" data-page="reports" onclick="loadReports()">Reports</button>
 
 </div>
 
@@ -969,58 +973,131 @@ showStatusDone("Item added","Your item has been added successfully.")
 
 
 function loadItems(forceRefresh){
+  showPage("view")
 
-showPage("view")
-
-if(!forceRefresh && viewCache){
-  itemList.innerHTML = viewCache.html
-  totalCost.innerHTML = viewCache.total
-  return
-}
-
-showStatusLoading("Loading inventory","Fetching your items…")
-
-fetch(url+"?action=get")
-.then(res=>{
-  if(!res.ok) throw new Error("Request failed")
-  return res.text()
-})
-.then(text=>{
-  let data
-  try{
-    data = JSON.parse(text)
-  }catch(e){
-    throw new Error("Invalid response")
+  if(!forceRefresh && viewCache){
+    itemList.innerHTML = viewCache.html
+    totalCost.innerHTML = viewCache.total
+    return
   }
 
-  if(!Array.isArray(data)) data = []
+  showStatusLoading("Loading inventory","Fetching your items…")
 
-  // ✅ IMPORTANT: store data for search
-  viewData = data.map((r,i)=>({
-    row:i+2,
-    name:String(r[0]||""),
-    qty:Number(r[1]||0),
-    locker:String(r[2]||""),
-    cost:Number(r[3]||0),
-    total:Number(r[4]||0)
-  }))
+  fetch(url + "?action=get")
+  .then(res=>{
+    if(!res.ok) throw new Error("Request failed")
+    return res.text()
+  })
+  .then(text=>{
+    let data
+    try{
+      data = JSON.parse(text)
+    }catch(e){
+      throw new Error("Invalid response")
+    }
 
-  // ✅ render all items
-  filterItems("")
+    if(!Array.isArray(data)) data = []
 
-  hideStatus()
-})
-.catch(()=>{
-  viewCache = null
-  viewData = []
-  hideStatus()
-  itemList.innerHTML = '<div class="card"><p style="text-align:center;margin:0;color:var(--text2);">Could not load inventory.</p><p style="text-align:center;margin:6px 0 0;font-size:0.85rem;color:var(--text2);">Check your connection and try again.</p></div>'
-  totalCost.innerHTML = "Total Value : ₹0"
-})
+    // ✅ SAVE DATA FOR SEARCH
+    viewData = data.map((r,i)=>(
+      {
+        row:i+2,
+        name:String(r[0]||""),
+        qty:Number(r[1]||0),
+        locker:String(r[2]||""),
+        cost:Number(r[3]||0),
+        total:Number(r[4]||0)
+      }
+    ))
 
+    // ✅ SORT IN ALPHABETICAL ORDER
+    viewData.sort((a,b)=>a.name.localeCompare(b.name))
+
+    // ✅ SHOW ALL ITEMS
+    filterItems("")
+
+    hideStatus()
+  })
+  .catch(()=>{
+    viewCache = null
+    viewData = []
+    hideStatus()
+    itemList.innerHTML = '<div class="card"><p style="text-align:center;margin:0;color:var(--text2);">Could not load inventory.</p><p style="text-align:center;margin:6px 0 0;font-size:0.85rem;color:var(--text2);">Check your connection and try again.</p></div>'
+    totalCost.innerHTML = "Total Value : ₹0"
+  })
+}
+let reportData = []
+
+function loadReports(){
+  showPage("reports")
+  showStatusLoading("Loading reports","Fetching inventory data…")
+
+  fetch(url + "?action=get")
+  .then(res => res.text())
+  .then(text => {
+    let data
+    try{
+      data = JSON.parse(text)
+    }catch(e){
+      data = []
+    }
+
+    if(!Array.isArray(data)) data = []
+
+    reportData = data.map(r => ({
+      name: String(r[0] || ""),
+      qty: Number(r[1] || 0),
+      locker: String(r[2] || ""),
+      total: Number(r[4] || 0)
+    }))
+
+    showSummary()
+    hideStatus()
+  })
 }
 
+function showSummary(){
+  const totalItems = reportData.length
+  const totalQty = reportData.reduce((sum,i)=>sum+i.qty,0)
+  const totalValue = reportData.reduce((sum,i)=>sum+i.total,0)
 
+  document.getElementById("reportContent").innerHTML = `
+    <p><b>Total item types:</b> ${totalItems}</p>
+    <p><b>Total quantity:</b> ${totalQty}</p>
+    <p><b>Total inventory value:</b> ₹${totalValue}</p>
+  `
+}
+
+function showLowStock(){
+  const lowStock = reportData.filter(i => i.qty <= 3)
+
+  let html = "<h4>⚠️ Low Stock Items</h4>"
+  if(lowStock.length){
+    html += lowStock.map(i =>
+      `<div class="card">${i.name} (${i.qty})</div>`
+    ).join("")
+  } else {
+    html += "<p>No low stock items 🎉</p>"
+  }
+
+  document.getElementById("reportContent").innerHTML = html
+}
+
+function showBorrowers(){
+  document.getElementById("reportContent").innerHTML = `
+    <h4>👥 Borrowers</h4>
+    <p>Show Google Sheet borrower logs here from take form sheet.</p>
+    <p>Example: Sinan - Arduino Nano - Return 2026-04-10</p>
+  `
+}
+
+function showReturned(){
+  document.getElementById("reportContent").innerHTML = `
+    <h4>✅ Returned Persons</h4>
+    <p>Show returned item users here.</p>
+    <p>Example: Afkar - ESP8266 - Returned</p>
+  `
+}8
 
 function editItemPage(row,item,qty,locker,cost){
 
