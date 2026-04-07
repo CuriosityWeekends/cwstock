@@ -457,6 +457,14 @@ radial-gradient(ellipse 60% 40% at 90% 110%,rgba(0,229,192,0.05),transparent);}
 
 <div class="totalBox" id="totalCost">Total Value : ₹0</div>
 
+<!-- Search Section -->
+<div class="card">
+<h3>Search Items</h3>
+<input id="searchInput" placeholder="Search by item name..." oninput="filterItems(this.value)">
+<button onclick="filterItems(document.getElementById('searchInput').value)">🔍 Search</button>
+<div id="searchInfo" style="margin-top:10px;font-size:0.85rem;color:var(--text2);"></div>
+</div>
+
 <div id="itemList"></div>
 
 </div>
@@ -527,8 +535,53 @@ Made by Afkar — Curiosity Weekends<br>
 const url="https://script.google.com/macros/s/AKfycbwd_xE9NtNjLAjfYWZLjygRijPxFm090e2zYNNlkvJk8X-m-NbKu5AbREWR-sdJr0YQTw/exec"
 
 let editRow=0
+let viewData = []
 let viewCache=null
 let availableItemsCache=null
+
+function filterItems(searchTerm) {
+  const term = searchTerm.toLowerCase().trim()
+  const itemListEl = document.getElementById('itemList')
+  const totalCostEl = document.getElementById('totalCost')
+  const searchInfoEl = document.getElementById('searchInfo')
+  
+  if (viewData.length === 0) {
+    itemListEl.innerHTML = '<div class="card"><p style="text-align:center;margin:0;color:var(--text2);">No items loaded yet.</p></div>'
+    totalCostEl.innerHTML = 'Total Value : ₹0'
+    return
+  }
+  
+  const filtered = viewData.filter(item => 
+    item.name.toLowerCase().includes(term)
+  )
+  
+  let html = ''
+  let total = 0
+  filtered.forEach(item => {
+    const safeName = String(item.name).replace(/'/g, "\\'").replace(/"/g, '"')
+    total += item.total
+    html += `
+      <div class="card itemCard">
+        <div class="name">${item.name}</div>
+        <div class="meta">Qty ${item.qty} · Locker ${item.locker} · ₹${item.cost} each → Total ₹${item.total}</div>
+        <button class="editBtn" onclick="editItemPage(${item.row},'${safeName}',${item.qty},'${item.locker}',${item.cost})">Edit</button>
+      </div>
+    `
+  })
+  
+  itemListEl.innerHTML = html || '<div class="card"><p style="text-align:center;margin:0;color:var(--text2);">No items match your search.</p></div>'
+  totalCostEl.innerHTML = `Total Value : ₹${total}`
+  
+  if (searchInfoEl) {
+    if (term) {
+      searchInfoEl.textContent = `Showing ${filtered.length} of ${viewData.length} items`
+    } else {
+      searchInfoEl.textContent = ''
+    }
+  }
+  
+  viewCache = {html: html, total: totalCostEl.innerHTML}
+}
 
 function showStatusLoading(title,message){
 const overlay=document.getElementById("statusOverlay")
@@ -918,47 +971,51 @@ showStatusDone("Item added","Your item has been added successfully.")
 function loadItems(forceRefresh){
 
 showPage("view")
-if(!forceRefresh&&viewCache){
-itemList.innerHTML=viewCache.html
-totalCost.innerHTML=viewCache.total
-return
+
+if(!forceRefresh && viewCache){
+  itemList.innerHTML = viewCache.html
+  totalCost.innerHTML = viewCache.total
+  return
 }
 
 showStatusLoading("Loading inventory","Fetching your items…")
 
 fetch(url+"?action=get")
 .then(res=>{
-if(!res.ok)throw new Error("Request failed")
-return res.text()
+  if(!res.ok) throw new Error("Request failed")
+  return res.text()
 })
 .then(text=>{
-let data
-try{ data=JSON.parse(text) }catch(e){ throw new Error("Invalid response") }
-if(!Array.isArray(data))data=[]
-let html=""
-let total=0
-data.forEach((r,i)=>{
-let row=i+2
-total+=Number(r[4]||0)
-const safeName=String(r[0]||"").replace(/'/g,"\\'").replace(/"/g,'&quot;')
-html+=`
-<div class="card itemCard">
-<div class="name">${r[0]}</div>
-<div class="meta">Qty ${r[1]} · Locker ${r[2]} · ₹${r[3]} each → Total ₹${r[4]}</div>
-<button class="editBtn" onclick="editItemPage(${row},'${safeName}',${r[1]},'${r[2]}',${r[3]})">Edit</button>
-</div>
-`
-})
-itemList.innerHTML=html
-totalCost.innerHTML="Total Value : ₹"+total
-viewCache={html:html,total:"Total Value : ₹"+total}
-hideStatus()
+  let data
+  try{
+    data = JSON.parse(text)
+  }catch(e){
+    throw new Error("Invalid response")
+  }
+
+  if(!Array.isArray(data)) data = []
+
+  // ✅ IMPORTANT: store data for search
+  viewData = data.map((r,i)=>({
+    row:i+2,
+    name:String(r[0]||""),
+    qty:Number(r[1]||0),
+    locker:String(r[2]||""),
+    cost:Number(r[3]||0),
+    total:Number(r[4]||0)
+  }))
+
+  // ✅ render all items
+  filterItems("")
+
+  hideStatus()
 })
 .catch(()=>{
-viewCache=null
-hideStatus()
-itemList.innerHTML='<div class="card"><p style="text-align:center;margin:0;color:var(--text2);">Could not load inventory.</p><p style="text-align:center;margin:6px 0 0;font-size:0.85rem;color:var(--text2);">Check your connection and try again.</p></div>'
-totalCost.innerHTML="Total Value : ₹0"
+  viewCache = null
+  viewData = []
+  hideStatus()
+  itemList.innerHTML = '<div class="card"><p style="text-align:center;margin:0;color:var(--text2);">Could not load inventory.</p><p style="text-align:center;margin:6px 0 0;font-size:0.85rem;color:var(--text2);">Check your connection and try again.</p></div>'
+  totalCost.innerHTML = "Total Value : ₹0"
 })
 
 }
